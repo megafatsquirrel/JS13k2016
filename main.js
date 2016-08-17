@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var TILE_HEIGHT = 50;
 	var MAP_OFFSET_LEFT = 100;
 	var MAP_OFFSET_TOP = 50;
-	var MAP_TILE_BORDER = 1;
 
 	var TILE_GRASS = '#18da39';
 	var TILE_DIRT = '#e0bd6d';
@@ -37,8 +36,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			gameMap[i] = [];
 			for (var j = 0; j < height; j++){
 				gameMap[i][j] = createGameTile(
-					i * (TILE_WIDTH + MAP_TILE_BORDER) + MAP_OFFSET_LEFT,
-					j * (TILE_HEIGHT + MAP_TILE_BORDER) + MAP_OFFSET_TOP,
+					i * TILE_WIDTH + MAP_OFFSET_LEFT,
+					j * TILE_HEIGHT + MAP_OFFSET_TOP,
 					TILE_WIDTH,
 					TILE_HEIGHT,
 					TILE_GRASS);
@@ -76,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 		return temp;
 	}
+	var currentSelectedTile;
 
 	console.log(gameMap[0][0].left + "/" + gameMap[0][0].top);
 
@@ -98,10 +98,17 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 			// TODO clicking on a tile, checks for a game piece show game piece info
 			// if empty tile or outside of game board deselect
-			var indexX = parseInt(clickX / TILE_WIDTH);
-			var indexY = parseInt(clickY / TILE_HEIGHT);
-			var gamePiece = gameMap[indexX][indexY];
-			gamePiece.color = '#cccccc';
+
+			if ( clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
+				var indexX = parseInt(clickX / TILE_WIDTH);
+				var indexY = parseInt(clickY / TILE_HEIGHT);
+				if (indexX >= 0 && indexY >= 0 && indexX <= MAP_WIDTH && indexY <= MAP_HEIGHT) {
+					var gamePiece = gameMap[indexX][indexY];
+					if (gamePiece !== undefined) {
+						gamePiece.color = '#cccccc';
+					}
+				}				
+			}
 			
 		} ) ;
 	}
@@ -118,6 +125,12 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			for (var j = 0; j < MAP_HEIGHT; j++){
 				ctx.fillStyle = gameMap[i][j].color;
 				ctx.fillRect(gameMap[i][j].left, 
+					gameMap[i][j].top, 
+					gameMap[i][j].width, 
+					gameMap[i][j].height);
+
+				ctx.fillStyle = '#000000';
+				ctx.strokeRect(gameMap[i][j].left, 
 					gameMap[i][j].top, 
 					gameMap[i][j].width, 
 					gameMap[i][j].height);
