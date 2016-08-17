@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 	var CLEAR_COLOR = '#FFFFFF';
 	var GAME_PIECE_DEFAULT_COLOR = '#da4040';
+	var HIGHLIGHT_COLOR = '#f5ed09';
 
 	var MAP_WIDTH = 12;
 	var MAP_HEIGHT = 10;
@@ -46,17 +47,21 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	}
 
 	// setup game objects
-	var gamePiece = createGamePiece(gameMap[0][0].left, gameMap[0][0].top, TILE_WIDTH, TILE_HEIGHT, GAME_PIECE_DEFAULT_COLOR, true);
+	var gamePiece = createGamePiece(gameMap[0][0].left, gameMap[0][0].top, TILE_WIDTH, TILE_HEIGHT, GAME_PIECE_DEFAULT_COLOR, 'goblin', true);
+	gameMap[0][0].occupied = true;
+	gameMap[0][0].gamePieceId = gamePiece.id;
 	var gameObjects = new Array(gamePiece);
 
-	function createGamePiece(left, top, width, height, color, isNPC) {
+	function createGamePiece(left, top, width, height, color, id, isNPC) {
 		// TODO refactor this into a base case for all pieces
+		// TODO find a way to enforce a unique id
 		var temp = {
 			left: left,
 			top: top,
 			width: width,
 			height: height,
 			color: color,
+			id: id,
 			type: isNPC ? 'NPC' : 'PC'
 		};
 
@@ -70,14 +75,15 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			width: width,
 			height: height,
 			color: color,
-			type: "NORMAL"
+			gamePieceId: '',
+			occupied: false,
+			type: 'NORMAL'
 		};
 
 		return temp;
 	}
-	var currentSelectedTile;
 
-	console.log(gameMap[0][0].left + "/" + gameMap[0][0].top);
+	var currentSelectedTile;
 
 	var clientXoutput = document.getElementById('clientXoutput');
 	var clientYoutput = document.getElementById('clientYoutput');
@@ -97,17 +103,36 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			clickYoutput.innerHTML = clickY;
 
 			// TODO clicking on a tile, checks for a game piece show game piece info
-			// if empty tile or outside of game board deselect
+			// Handle clicking on another game piece, deselect previous and select current
 
 			if ( clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
 				var indexX = parseInt(clickX / TILE_WIDTH);
 				var indexY = parseInt(clickY / TILE_HEIGHT);
 				if (indexX >= 0 && indexY >= 0 && indexX <= MAP_WIDTH && indexY <= MAP_HEIGHT) {
 					var gamePiece = gameMap[indexX][indexY];
-					if (gamePiece !== undefined) {
-						gamePiece.color = '#cccccc';
+					if (gamePiece !== undefined && gamePiece.occupied) {
+						gameObjects.forEach(function(item) {
+							if (item.id === gamePiece.gamePieceId) {
+								currentSelectedTile = item.id;
+								item.color = HIGHLIGHT_COLOR;
+							}
+						});
+					}else if (currentSelectedTile !== undefined){ // clicked outside of the occupied square
+						gameObjects.forEach(function(item) {
+							if (item.id === currentSelectedTile) {
+								currentSelectedTile = undefined;
+								item.color = GAME_PIECE_DEFAULT_COLOR;
+							}
+						});
 					}
 				}				
+			}else if (currentSelectedTile !== undefined){ // clicked outside of the map
+				gameObjects.forEach(function(item) {
+					if (item.id === currentSelectedTile) {
+						currentSelectedTile = undefined;
+						item.color = GAME_PIECE_DEFAULT_COLOR;
+					}
+				});
 			}
 			
 		} ) ;
