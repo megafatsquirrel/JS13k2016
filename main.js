@@ -47,12 +47,15 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	}
 
 	// setup game objects
-	var gamePiece = createGamePiece(gameMap[0][0].left, gameMap[0][0].top, TILE_WIDTH, TILE_HEIGHT, GAME_PIECE_DEFAULT_COLOR, 'goblin', true);
+	var weapon1 = { name: 'dagger', damage: 2 };
+	var armor1 = { name: 'rags', defense: 1 };
+	var gamePiece = createGamePiece(gameMap[0][0].left, gameMap[0][0].top, TILE_WIDTH, TILE_HEIGHT, 
+									GAME_PIECE_DEFAULT_COLOR, 'goblin', 'Goblin', '10', weapon1, armor1, true);
 	gameMap[0][0].occupied = true;
 	gameMap[0][0].gamePieceId = gamePiece.id;
 	var gameObjects = new Array(gamePiece);
 
-	function createGamePiece(left, top, width, height, color, id, isNPC) {
+	function createGamePiece(left, top, width, height, color, id, name, health, weapon, armor, isNPC) {
 		// TODO refactor this into a base case for all pieces
 		// TODO find a way to enforce a unique id
 		var temp = {
@@ -62,6 +65,13 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			height: height,
 			color: color,
 			id: id,
+			name: name,
+			health: health,
+			currentHP: health,
+			weapon: weapon,
+			armor: armor,
+			attack: weapon.damage * 1, // TODO Add a dynamic mod for game piece type
+			defense: armor.defense * 1, // TODO Add a dynamic mod for game piece type
 			type: isNPC ? 'NPC' : 'PC'
 		};
 
@@ -82,6 +92,14 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 		return temp;
 	}
+
+	var gamePieceInfoCard = document.getElementById('gamePieceInfoCard');
+	var gamePieceName = document.getElementById('gamePieceName');
+	var gamePieceHealth = document.getElementById('gamePieceHealth');
+	var gamePieceAttack = document.getElementById('gamePieceAttack');
+	var gamePieceDefense = document.getElementById('gamePieceDefense');
+	var gamePieceWeapon = document.getElementById('gamePieceWeapon');
+	var gamePieceArmor = document.getElementById('gamePieceArmor');
 
 	var currentSelectedTile;
 
@@ -113,15 +131,13 @@ document.addEventListener('DOMContentLoaded', function(e) {
 					if (gamePiece !== undefined && gamePiece.occupied) {
 						gameObjects.forEach(function(item) {
 							if (item.id === gamePiece.gamePieceId) {
-								currentSelectedTile = item.id;
-								item.color = HIGHLIGHT_COLOR;
+								selectGamePiece(item);
 							}
 						});
 					}else if (currentSelectedTile !== undefined){ // clicked outside of the occupied square
 						gameObjects.forEach(function(item) {
 							if (item.id === currentSelectedTile) {
-								currentSelectedTile = undefined;
-								item.color = GAME_PIECE_DEFAULT_COLOR;
+								deselectGamePiece(item);
 							}
 						});
 					}
@@ -129,13 +145,31 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			}else if (currentSelectedTile !== undefined){ // clicked outside of the map
 				gameObjects.forEach(function(item) {
 					if (item.id === currentSelectedTile) {
-						currentSelectedTile = undefined;
-						item.color = GAME_PIECE_DEFAULT_COLOR;
+						deselectGamePiece(item);
 					}
 				});
 			}
 			
 		} ) ;
+	}
+
+	function selectGamePiece(gamePiece){
+		currentSelectedTile = gamePiece.id;
+		gamePiece.color = HIGHLIGHT_COLOR;
+		gamePieceInfoCard.style.display = 'block';
+
+		gamePieceName.innerHTML = gamePiece.name;
+		gamePieceHealth.innerHTML = gamePiece.health + " / " + gamePiece.currentHP;
+		gamePieceAttack.innerHTML = gamePiece.attack;
+		gamePieceDefense.innerHTML = gamePiece.defense;
+		gamePieceWeapon.innerHTML = gamePiece.weapon.name;
+		gamePieceArmor.innerHTML = gamePiece.armor.name;
+	}
+
+	function deselectGamePiece(gamePiece){
+		currentSelectedTile = undefined;
+		gamePiece.color = GAME_PIECE_DEFAULT_COLOR;
+		gamePieceInfoCard.style.display = 'none';
 	}
 
 	function clearScreen() {
