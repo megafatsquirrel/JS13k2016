@@ -53,7 +53,13 @@ document.addEventListener('DOMContentLoaded', function(e) {
 									GAME_PIECE_DEFAULT_COLOR, 'goblin', 'Goblin', '10', weapon1, armor1, true);
 	gameMap[0][0].occupied = true;
 	gameMap[0][0].gamePieceId = gamePiece.id;
-	var gameObjects = new Array(gamePiece);
+
+	var gamePieceHero = createGamePiece(gameMap[2][1].left, gameMap[2][1].top, TILE_WIDTH, TILE_HEIGHT, 
+									GAME_PIECE_DEFAULT_COLOR, 'hero', 'Hero', '12', weapon1, armor1, true);
+
+	gameMap[2][1].occupied = true;
+	gameMap[2][1].gamePieceId = gamePieceHero.id;
+	var gameObjects = new Array(gamePiece, gamePieceHero);
 
 	function createGamePiece(left, top, width, height, color, id, name, health, weapon, armor, isNPC) {
 		// TODO refactor this into a base case for all pieces
@@ -136,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 						});
 					}else if (currentSelectedTile !== undefined){ // clicked outside of the occupied square
 						gameObjects.forEach(function(item) {
-							if (item.id === currentSelectedTile) {
+							if (item.id === currentSelectedTile.id) {
 								deselectGamePiece(item);
 							}
 						});
@@ -144,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 				}				
 			}else if (currentSelectedTile !== undefined){ // clicked outside of the map
 				gameObjects.forEach(function(item) {
-					if (item.id === currentSelectedTile) {
+					if (item.id === currentSelectedTile.id) {
 						deselectGamePiece(item);
 					}
 				});
@@ -154,7 +160,11 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	}
 
 	function selectGamePiece(gamePiece){
-		currentSelectedTile = gamePiece.id;
+		if (currentSelectedTile !== undefined) {
+			deselectGamePiece(currentSelectedTile);
+		}
+
+		currentSelectedTile = gamePiece;
 		gamePiece.color = HIGHLIGHT_COLOR;
 		gamePieceInfoCard.style.display = 'block';
 
