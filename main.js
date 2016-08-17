@@ -23,7 +23,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var MAP_HEIGHT = 10;
 	var TILE_WIDTH = 50;
 	var TILE_HEIGHT = 50;
-
+	var MAP_OFFSET_LEFT = 100;
+	var MAP_OFFSET_TOP = 50;
+	var MAP_TILE_BORDER = 1;
 
 	var TILE_GRASS = '#18da39';
 	var TILE_DIRT = '#e0bd6d';
@@ -35,8 +37,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			gameMap[i] = [];
 			for (var j = 0; j < height; j++){
 				gameMap[i][j] = createGameTile(
-					i * (TILE_WIDTH + 1) + 100,
-					j * (TILE_HEIGHT + 1) + 50,
+					i * (TILE_WIDTH + MAP_TILE_BORDER) + MAP_OFFSET_LEFT,
+					j * (TILE_HEIGHT + MAP_TILE_BORDER) + MAP_OFFSET_TOP,
 					TILE_WIDTH,
 					TILE_HEIGHT,
 					TILE_GRASS);
@@ -75,24 +77,33 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		return temp;
 	}
 
+	console.log(gameMap[0][0].left + "/" + gameMap[0][0].top);
+
 	var clientXoutput = document.getElementById('clientXoutput');
 	var clientYoutput = document.getElementById('clientYoutput');
-	var screenXoutput = document.getElementById('screenXoutput');
-	var screenYoutput = document.getElementById('screenYoutput');
+	var clickXoutput = document.getElementById('clickXoutput');
+	var clickYoutput = document.getElementById('clickYoutput');
 	function createInputEvents() {
 		document.addEventListener("mousemove", function(e) {
 			clientXoutput.innerHTML = e.clientX;
 			clientYoutput.innerHTML = e.clientY;
-			screenXoutput.innerHTML = e.screenX;
-			screenYoutput.innerHTML = e.screenY;
 		});
-
 
 		document.addEventListener("mousedown", function(e) {
+			var clickX = (e.clientX - (MAP_OFFSET_LEFT + canvas.parentElement.offsetLeft)) + document.scrollingElement.scrollLeft;
+			var clickY = (e.clientY - (MAP_OFFSET_TOP + canvas.parentElement.offsetTop)) + document.scrollingElement.scrollTop;
+
+			clickXoutput.innerHTML = clickX;
+			clickYoutput.innerHTML = clickY;
+
 			// TODO clicking on a tile, checks for a game piece show game piece info
 			// if empty tile or outside of game board deselect
-			gameObjects[0].color = '#000000';	
-		});
+			var indexX = parseInt(clickX / TILE_WIDTH);
+			var indexY = parseInt(clickY / TILE_HEIGHT);
+			var gamePiece = gameMap[indexX][indexY];
+			gamePiece.color = '#cccccc';
+			
+		} ) ;
 	}
 
 	function clearScreen() {
