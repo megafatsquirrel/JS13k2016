@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var gameObjects = new Array(gamePiece);
 
 	function createGamePiece(left, top, width, height, color, isNPC) {
+		// TODO refactor this into a base case for all pieces
 		var temp = {
 			left: left,
 			top: top,
@@ -72,6 +73,26 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		};
 
 		return temp;
+	}
+
+	var clientXoutput = document.getElementById('clientXoutput');
+	var clientYoutput = document.getElementById('clientYoutput');
+	var screenXoutput = document.getElementById('screenXoutput');
+	var screenYoutput = document.getElementById('screenYoutput');
+	function createInputEvents() {
+		document.addEventListener("mousemove", function(e) {
+			clientXoutput.innerHTML = e.clientX;
+			clientYoutput.innerHTML = e.clientY;
+			screenXoutput.innerHTML = e.screenX;
+			screenYoutput.innerHTML = e.screenY;
+		});
+
+
+		document.addEventListener("mousedown", function(e) {
+			// TODO clicking on a tile, checks for a game piece show game piece info
+			// if empty tile or outside of game board deselect
+			gameObjects[0].color = '#000000';	
+		});
 	}
 
 	function clearScreen() {
@@ -114,5 +135,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		requestAnimationFrame(gameLoop);		
 	}
 
+	createInputEvents();
 	requestAnimationFrame(gameLoop);
 });
