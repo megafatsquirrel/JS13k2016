@@ -50,18 +50,18 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var weapon1 = { name: 'dagger', damage: 2 };
 	var armor1 = { name: 'rags', defense: 1 };
 	var gamePiece = createGamePiece(gameMap[0][0].left, gameMap[0][0].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR, 'goblin', 'Goblin', '10', weapon1, armor1, true);
+									GAME_PIECE_DEFAULT_COLOR, 'goblin', {x: 0, y: 0}, 'Goblin', '10', 4, weapon1, armor1, true);
 	gameMap[0][0].occupied = true;
 	gameMap[0][0].gamePieceId = gamePiece.id;
 
 	var gamePieceHero = createGamePiece(gameMap[2][1].left, gameMap[2][1].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR, 'hero', 'Hero', '12', weapon1, armor1, true);
+									GAME_PIECE_DEFAULT_COLOR, 'hero', {x: 2, y: 1}, 'Hero', '12', 4, weapon1, armor1, true);
 
 	gameMap[2][1].occupied = true;
 	gameMap[2][1].gamePieceId = gamePieceHero.id;
 	var gameObjects = new Array(gamePiece, gamePieceHero);
 
-	function createGamePiece(left, top, width, height, color, id, name, health, weapon, armor, isNPC) {
+	function createGamePiece(left, top, width, height, color, id, location, name, health, movement, weapon, armor, isNPC) {
 		// TODO refactor this into a base case for all pieces
 		// TODO find a way to enforce a unique id
 		var temp = {
@@ -71,8 +71,10 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			height: height,
 			color: color,
 			id: id,
+			location: location, //1|2
 			name: name,
 			health: health,
+			movement: movement,
 			currentHP: health,
 			weapon: weapon,
 			armor: armor,
@@ -92,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			height: height,
 			color: color,
 			gamePieceId: '',
+			isHighlight: false,
 			occupied: false,
 			type: 'NORMAL'
 		};
@@ -106,8 +109,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var gamePieceDefense = document.getElementById('gamePieceDefense');
 	var gamePieceWeapon = document.getElementById('gamePieceWeapon');
 	var gamePieceArmor = document.getElementById('gamePieceArmor');
+	var gamePieceMovement = document.getElementById('gamePieceMovement');
 
-	var currentSelectedTile;
+	var currentSelectedTile = null;
 
 	var clientXoutput = document.getElementById('clientXoutput');
 	var clientYoutput = document.getElementById('clientYoutput');
@@ -140,17 +144,17 @@ document.addEventListener('DOMContentLoaded', function(e) {
 								selectGamePiece(item);
 							}
 						});
-					}else if (currentSelectedTile !== undefined){ // clicked outside of the occupied square
+					}else if (currentSelectedTile !== null){ // clicked outside of the occupied square
 						gameObjects.forEach(function(item) {
-							if (item.id === currentSelectedTile.id) {
+							if (currentSelectedTile !== null && item.id === currentSelectedTile.id) {
 								deselectGamePiece(item);
 							}
 						});
 					}
 				}				
-			}else if (currentSelectedTile !== undefined){ // clicked outside of the map
+			}else if (currentSelectedTile !== null){ // clicked outside of the map
 				gameObjects.forEach(function(item) {
-					if (item.id === currentSelectedTile.id) {
+					if (currentSelectedTile !== null && item.id === currentSelectedTile.id) {
 						deselectGamePiece(item);
 					}
 				});
@@ -160,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	}
 
 	function selectGamePiece(gamePiece){
-		if (currentSelectedTile !== undefined) {
+		if (currentSelectedTile !== null){
 			deselectGamePiece(currentSelectedTile);
 		}
 
@@ -170,29 +174,93 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 		gamePieceName.innerHTML = gamePiece.name;
 		gamePieceHealth.innerHTML = gamePiece.health + " / " + gamePiece.currentHP;
+		gamePieceMovement.innerHTML = gamePiece.movement;
 		gamePieceAttack.innerHTML = gamePiece.attack;
 		gamePieceDefense.innerHTML = gamePiece.defense;
 		gamePieceWeapon.innerHTML = gamePiece.weapon.name;
 		gamePieceArmor.innerHTML = gamePiece.armor.name;
+
+		// TODO highlight tiles for places the game piece can move
+		for(var i = 1; i <= gamePiece.movement; i++){
+			// right
+			if (gamePiece.location.x + i <= MAP_WIDTH){
+				gameMap[gamePiece.location.x + i][gamePiece.location.y].isHighlight = true;
+				selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x + i, false);
+			}
+			// left
+			if (gamePiece.location.x - i >= 0){
+				gameMap[gamePiece.location.x - i][gamePiece.location.y].isHighlight = true;
+				selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x - i, true);
+			}
+			// top
+			if (gamePiece.location.y - i >= 0){
+				gameMap[gamePiece.location.x][gamePiece.location.y - i].isHighlight = true;
+				selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y - i, true);
+			}
+			// down
+			if (gamePiece.location.y + i <= MAP_HEIGHT){
+				gameMap[gamePiece.location.x][gamePiece.location.y + i].isHighlight = true;
+				selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y + i, false);
+			}
+		}
+	}
+
+	function selectSideTiles(gamePiece, movement, index, reverse){
+		for(var i = 1; i <= movement; i++){
+			if (!reverse){
+				if (gamePiece.location.y + i <= MAP_HEIGHT){
+					gameMap[index][gamePiece.location.y + i].isHighlight = true;
+				}
+			}else{
+				if (gamePiece.location.y - i >= 0){
+					gameMap[index][gamePiece.location.y - i].isHighlight = true;
+				}
+			}
+		}
+	}
+
+	function selectDownTiles(gamePiece, movement, index, reverse){
+		for(var i = 1; i <= movement; i++){
+			if (!reverse){
+				if (gamePiece.location.x - i >= 0){				
+					gameMap[gamePiece.location.x - i][index].isHighlight = true;
+				}
+			}else{
+				if (gamePiece.location.x + i <= MAP_WIDTH){				
+					gameMap[gamePiece.location.x + i][index].isHighlight = true;
+				}
+			}
+		}
+	}
+
+	function deselectGameMapTiles() {
+		for (var i = 0; i < MAP_WIDTH; i++){
+			for (var j = 0; j < MAP_HEIGHT; j++){
+				if (gameMap[i][j].isHighlight) {
+					gameMap[i][j].isHighlight = false;
+				}
+			}
+		}
 	}
 
 	function deselectGamePiece(gamePiece){
-		currentSelectedTile = undefined;
+		currentSelectedTile = null;
 		gamePiece.color = GAME_PIECE_DEFAULT_COLOR;
 		gamePieceInfoCard.style.display = 'none';
+		deselectGameMapTiles();
 	}
 
-	function clearScreen() {
+	function clearScreen(){
 		ctx.fillStyle = CLEAR_COLOR;
 		ctx.fillRect(canvas.offsetLeft, canvas.offsetTop, canvas.width, canvas.height);
 	}
 
-	function render() {
+	function render(){
 		clearScreen();
 		// draw map
 		for (var i = 0; i < MAP_WIDTH; i++){
 			for (var j = 0; j < MAP_HEIGHT; j++){
-				ctx.fillStyle = gameMap[i][j].color;
+				ctx.fillStyle = gameMap[i][j].isHighlight ? HIGHLIGHT_COLOR : gameMap[i][j].color;
 				ctx.fillRect(gameMap[i][j].left, 
 					gameMap[i][j].top, 
 					gameMap[i][j].width, 
@@ -216,12 +284,12 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		}
 	}
 
-	function logic() {
+	function logic(){
 		
 		// TODO add logic, maybe the smart kind...
 	}
 
-	function gameLoop() {
+	function gameLoop(){
 
 		logic();
 		render();
