@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	gameMap[0][0].gamePieceId = gamePiece.id;
 
 	var gamePieceHero = createGamePiece(gameMap[2][1].left, gameMap[2][1].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR, 'hero', {x: 2, y: 1}, 'Hero', '12', 4, weapon1, armor1, true);
+									GAME_PIECE_DEFAULT_COLOR, 'hero', {x: 2, y: 1}, 'Hero', '12', 4, weapon1, armor1, false);
 
 	gameMap[2][1].occupied = true;
 	gameMap[2][1].gamePieceId = gamePieceHero.id;
@@ -70,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			width: width,
 			height: height,
 			color: color,
+			hasMoved: false,
 			id: id,
 			location: location, //1|2
 			name: name,
@@ -110,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var gamePieceWeapon = document.getElementById('gamePieceWeapon');
 	var gamePieceArmor = document.getElementById('gamePieceArmor');
 	var gamePieceMovement = document.getElementById('gamePieceMovement');
+	var gamePieceHasMoved = document.getElementById('gamePieceHasMoved');
 
 	var currentSelectedTile = null;
 
@@ -130,21 +132,34 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			clickXoutput.innerHTML = clickX;
 			clickYoutput.innerHTML = clickY;
 
-			// TODO clicking on a tile, checks for a game piece show game piece info
-			// Handle clicking on another game piece, deselect previous and select current
-
 			if ( clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
 				var indexX = parseInt(clickX / TILE_WIDTH);
 				var indexY = parseInt(clickY / TILE_HEIGHT);
 				if (indexX >= 0 && indexY >= 0 && indexX <= MAP_WIDTH && indexY <= MAP_HEIGHT) {
-					var gamePiece = gameMap[indexX][indexY];
-					if (gamePiece !== undefined && gamePiece.occupied) {
+					var mapTile = gameMap[indexX][indexY];
+					if (mapTile !== undefined && mapTile.occupied) {
 						gameObjects.forEach(function(item) {
-							if (item.id === gamePiece.gamePieceId) {
+							if (item.id === mapTile.gamePieceId) {
 								selectGamePiece(item);
 							}
 						});
 					}else if (currentSelectedTile !== null){ // clicked outside of the occupied square
+						if (!currentSelectedTile.hasMoved && !mapTile.occupied && mapTile.isHighlight && currentSelectedTile.type === 'PC'){
+							for (var i = 0; i < gameObjects.length; i++) {
+								if (currentSelectedTile.id === gameObjects[i].id){
+									var currentGamePiece = gameObjects[i];
+									currentGamePiece.left = gameMap[indexX][indexY].left;
+									currentGamePiece.top = gameMap[indexX][indexY].top;
+									gameMap[currentGamePiece.location.x][currentGamePiece.location.y].occupied = false;
+									gameMap[currentGamePiece.location.x][currentGamePiece.location.x].gamePieceId = '';
+									gameMap[indexX][indexY].occupied = true;
+									gameMap[indexX][indexY].gamePieceId = currentGamePiece.id;
+									gameObjects[i].hasMoved = true;
+									currentSelectedTile = currentGamePiece;
+								}
+							}
+						}
+
 						gameObjects.forEach(function(item) {
 							if (currentSelectedTile !== null && item.id === currentSelectedTile.id) {
 								deselectGamePiece(item);
@@ -179,28 +194,30 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		gamePieceDefense.innerHTML = gamePiece.defense;
 		gamePieceWeapon.innerHTML = gamePiece.weapon.name;
 		gamePieceArmor.innerHTML = gamePiece.armor.name;
+		gamePieceHasMoved.innerHTML = gamePiece.hasMoved;
 
-		// TODO highlight tiles for places the game piece can move
-		for(var i = 1; i <= gamePiece.movement; i++){
-			// right
-			if (gamePiece.location.x + i <= MAP_WIDTH){
-				gameMap[gamePiece.location.x + i][gamePiece.location.y].isHighlight = true;
-				selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x + i, false);
-			}
-			// left
-			if (gamePiece.location.x - i >= 0){
-				gameMap[gamePiece.location.x - i][gamePiece.location.y].isHighlight = true;
-				selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x - i, true);
-			}
-			// top
-			if (gamePiece.location.y - i >= 0){
-				gameMap[gamePiece.location.x][gamePiece.location.y - i].isHighlight = true;
-				selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y - i, true);
-			}
-			// down
-			if (gamePiece.location.y + i <= MAP_HEIGHT){
-				gameMap[gamePiece.location.x][gamePiece.location.y + i].isHighlight = true;
-				selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y + i, false);
+		if (!gamePiece.hasMoved && gamePiece.type === 'PC'){
+			for(var i = 1; i <= gamePiece.movement; i++){
+				// right
+				if (gamePiece.location.x + i <= MAP_WIDTH){
+					gameMap[gamePiece.location.x + i][gamePiece.location.y].isHighlight = true;
+					selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x + i, false);
+				}
+				// left
+				if (gamePiece.location.x - i >= 0){
+					gameMap[gamePiece.location.x - i][gamePiece.location.y].isHighlight = true;
+					selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x - i, true);
+				}
+				// top
+				if (gamePiece.location.y - i >= 0){
+					gameMap[gamePiece.location.x][gamePiece.location.y - i].isHighlight = true;
+					selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y - i, true);
+				}
+				// down
+				if (gamePiece.location.y + i <= MAP_HEIGHT){
+					gameMap[gamePiece.location.x][gamePiece.location.y + i].isHighlight = true;
+					selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y + i, false);
+				}
 			}
 		}
 	}
