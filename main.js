@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var GAME_PIECE_DEFAULT_COLOR = '#da4040';
 	var HIGHLIGHT_COLOR = '#f5ed09';
 
+	var gameRound = 0;
+
 	var MAP_WIDTH = 12;
 	var MAP_HEIGHT = 10;
 	var TILE_WIDTH = 50;
@@ -49,17 +51,17 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	// setup game objects
 	var weapon1 = { name: 'dagger', damage: 2 };
 	var armor1 = { name: 'rags', defense: 1 };
-	var gamePiece = createGamePiece(gameMap[0][0].left, gameMap[0][0].top, TILE_WIDTH, TILE_HEIGHT, 
+	var gamePieceGoblin = createGamePiece(gameMap[0][0].left, gameMap[0][0].top, TILE_WIDTH, TILE_HEIGHT, 
 									GAME_PIECE_DEFAULT_COLOR, 'goblin', {x: 0, y: 0}, 'Goblin', '10', 4, weapon1, armor1, true);
 	gameMap[0][0].occupied = true;
-	gameMap[0][0].gamePieceId = gamePiece.id;
+	gameMap[0][0].gamePieceId = gamePieceGoblin.id;
 
-	var gamePieceHero = createGamePiece(gameMap[2][1].left, gameMap[2][1].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR, 'hero', {x: 2, y: 1}, 'Hero', '12', 4, weapon1, armor1, false);
+	var gamePieceHero = createGamePiece(gameMap[11][1].left, gameMap[11][1].top, TILE_WIDTH, TILE_HEIGHT, 
+									GAME_PIECE_DEFAULT_COLOR, 'hero', {x: 11, y: 1}, 'Hero', '12', 4, weapon1, armor1, false);
 
-	gameMap[2][1].occupied = true;
-	gameMap[2][1].gamePieceId = gamePieceHero.id;
-	var gameObjects = new Array(gamePiece, gamePieceHero);
+	gameMap[11][1].occupied = true;
+	gameMap[11][1].gamePieceId = gamePieceHero.id;
+	var gameObjects = new Array(gamePieceGoblin, gamePieceHero);
 
 	function createGamePiece(left, top, width, height, color, id, location, name, health, movement, weapon, armor, isNPC) {
 		// TODO refactor this into a base case for all pieces
@@ -114,6 +116,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var gamePieceHasMoved = document.getElementById('gamePieceHasMoved');
 	var gamePieceInfoDisplay = document.getElementById('gamePieceInfoDisplay');
 	var gamePieceInfoDisplayDefault = document.getElementById('gamePieceInfoDisplayDefault');
+	var currentRound = document.getElementById('currentRound');
+
+	var endTurnBtn = document.getElementById('endTurnBtn');
 
 	var currentSelectedTile = null;
 
@@ -146,6 +151,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 							}
 						});
 					}else if (currentSelectedTile !== null){ // clicked outside of the occupied square
+						// move piece
 						if (!currentSelectedTile.hasMoved && !mapTile.occupied && mapTile.isHighlight && currentSelectedTile.type === 'PC'){
 							for (var i = 0; i < gameObjects.length; i++) {
 								if (currentSelectedTile.id === gameObjects[i].id){
@@ -153,7 +159,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 									currentGamePiece.left = gameMap[indexX][indexY].left;
 									currentGamePiece.top = gameMap[indexX][indexY].top;
 									gameMap[currentGamePiece.location.x][currentGamePiece.location.y].occupied = false;
-									gameMap[currentGamePiece.location.x][currentGamePiece.location.x].gamePieceId = '';
+									gameMap[currentGamePiece.location.x][currentGamePiece.location.y].gamePieceId = '';
+									currentGamePiece.location = {x: indexX, y: indexY};
 									gameMap[indexX][indexY].occupied = true;
 									gameMap[indexX][indexY].gamePieceId = currentGamePiece.id;
 									gameObjects[i].hasMoved = true;
@@ -177,7 +184,15 @@ document.addEventListener('DOMContentLoaded', function(e) {
 				});
 			}
 			
-		} ) ;
+		});
+
+		endTurnBtn.addEventListener('click', function(e){
+			for (var i = 0; i < gameObjects.length; i++) {
+				gameObjects[i].hasMoved = false;
+			}
+			gameRound++;
+			currentRound.innerHTML = gameRound;
+		});
 	}
 
 	function selectGamePiece(gamePiece){
@@ -203,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		if (!gamePiece.hasMoved && gamePiece.type === 'PC'){
 			for(var i = 1; i <= gamePiece.movement; i++){
 				// right
-				if (gamePiece.location.x + i <= MAP_WIDTH){
+				if (gamePiece.location.x + i < MAP_WIDTH){
 					gameMap[gamePiece.location.x + i][gamePiece.location.y].isHighlight = true;
 					selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x + i, false);
 				}
@@ -218,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 					selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y - i, true);
 				}
 				// down
-				if (gamePiece.location.y + i <= MAP_HEIGHT){
+				if (gamePiece.location.y + i < MAP_HEIGHT){
 					gameMap[gamePiece.location.x][gamePiece.location.y + i].isHighlight = true;
 					selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y + i, false);
 				}
@@ -229,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function selectSideTiles(gamePiece, movement, index, reverse){
 		for(var i = 1; i <= movement; i++){
 			if (!reverse){
-				if (gamePiece.location.y + i <= MAP_HEIGHT){
+				if (gamePiece.location.y + i < MAP_HEIGHT){
 					gameMap[index][gamePiece.location.y + i].isHighlight = true;
 				}
 			}else{
@@ -247,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 					gameMap[gamePiece.location.x - i][index].isHighlight = true;
 				}
 			}else{
-				if (gamePiece.location.x + i <= MAP_WIDTH){				
+				if (gamePiece.location.x + i < MAP_WIDTH){				
 					gameMap[gamePiece.location.x + i][index].isHighlight = true;
 				}
 			}
@@ -306,9 +321,10 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		}
 	}
 
+
+
 	function logic(){
 		
-		// TODO add logic, maybe the smart kind...
 	}
 
 	function gameLoop(){
