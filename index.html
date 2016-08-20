@@ -13,15 +13,25 @@
 	<div style="position: relative; float: left; width: 800px;">
 		<canvas id="canvas" width="800" height="600"></canvas>	
 	</div>
-	<div id="gamePieceInfoCard" style="display: none; float: left; margin-left: 10px; width: 300px; height: 350px; background-color: #FFF; padding: 5px 15px;">
-		<h1 id="gamePieceName">Default</h1>
-		<p><strong>Health: </strong><span id="gamePieceHealth">/</span></p>
-		<p><strong>Movement: </strong><span id="gamePieceMovement">/</span></p>
-		<p><strong>Attack: </strong><span id="gamePieceAttack">/</span></p>
-		<p><strong>Defense: </strong><span id="gamePieceDefense">/</span></p>
-		<p><strong>Weapon: </strong><span id="gamePieceWeapon">/</span></p>
-		<p><strong>Armor: </strong><span id="gamePieceArmor">/</span></p>
-		<p><strong>Has Moved: </strong><span id="gamePieceHasMoved">/</span></p>
+	<div style="float: left;">
+		<div id="gamePieceInfoCard" style="margin-left: 10px; width: 300px; height: 350px; background-color: #FFF; padding: 5px 15px;">
+			<div id="gamePieceInfoDisplay" style="display:none;">
+				<h1 id="gamePieceName">Default</h1>
+				<p><strong>Health: </strong><span id="gamePieceHealth">/</span></p>
+				<p><strong>Movement: </strong><span id="gamePieceMovement">/</span></p>
+				<p><strong>Attack: </strong><span id="gamePieceAttack">/</span></p>
+				<p><strong>Defense: </strong><span id="gamePieceDefense">/</span></p>
+				<p><strong>Weapon: </strong><span id="gamePieceWeapon">/</span></p>
+				<p><strong>Armor: </strong><span id="gamePieceArmor">/</span></p>
+				<p><strong>Has Moved: </strong><span id="gamePieceHasMoved">/</span></p>
+			</div>
+			<div id="gamePieceInfoDisplayDefault">
+				<h1>Nothing Selected</h1>
+			</div>
+		</div>
+		<div style="margin-left: 10px;">
+			<button id="endTurnBtn" style="width: 100%; padding: 10px; margin-top: 10px;">End Turn</button>
+		</div>	
 	</div>
 	
 	<script src="main.js"></script>

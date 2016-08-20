@@ -112,6 +112,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var gamePieceArmor = document.getElementById('gamePieceArmor');
 	var gamePieceMovement = document.getElementById('gamePieceMovement');
 	var gamePieceHasMoved = document.getElementById('gamePieceHasMoved');
+	var gamePieceInfoDisplay = document.getElementById('gamePieceInfoDisplay');
+	var gamePieceInfoDisplayDefault = document.getElementById('gamePieceInfoDisplayDefault');
 
 	var currentSelectedTile = null;
 
@@ -185,7 +187,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 		currentSelectedTile = gamePiece;
 		gamePiece.color = HIGHLIGHT_COLOR;
-		gamePieceInfoCard.style.display = 'block';
 
 		gamePieceName.innerHTML = gamePiece.name;
 		gamePieceHealth.innerHTML = gamePiece.health + " / " + gamePiece.currentHP;
@@ -195,6 +196,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		gamePieceWeapon.innerHTML = gamePiece.weapon.name;
 		gamePieceArmor.innerHTML = gamePiece.armor.name;
 		gamePieceHasMoved.innerHTML = gamePiece.hasMoved;
+
+		gamePieceInfoDisplay.style.display = 'block';
+		gamePieceInfoDisplayDefault.style.display = 'none';
 
 		if (!gamePiece.hasMoved && gamePiece.type === 'PC'){
 			for(var i = 1; i <= gamePiece.movement; i++){
@@ -263,7 +267,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function deselectGamePiece(gamePiece){
 		currentSelectedTile = null;
 		gamePiece.color = GAME_PIECE_DEFAULT_COLOR;
-		gamePieceInfoCard.style.display = 'none';
+		gamePieceInfoDisplay.style.display = 'none';
+		gamePieceInfoDisplayDefault.style.display = 'block';
 		deselectGameMapTiles();
 	}
 
