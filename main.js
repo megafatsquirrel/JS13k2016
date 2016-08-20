@@ -14,7 +14,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 	var CLEAR_COLOR = '#FFFFFF';
 	var GAME_PIECE_DEFAULT_COLOR_NPC = '#ffc107';
+	var GAME_PIECE_HIGHLIGHT_COLOR_NPC = '#ffedb6';
 	var GAME_PIECE_DEFAULT_COLOR_PC = '#d40dcb';
+	var GAME_PIECE_HIGHLIGHT_COLOR_PC = '#f7abf3';
 	var HIGHLIGHT_COLOR = '#7e98e8';
 	var HIGHLIGHT_COLOR_ATTACK = '#ef0f0f';
 
@@ -82,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			weapon: weapon,
 			armor: armor,
 			attack: weapon.damage * 1, // TODO Add a dynamic mod for game piece type
-			attackRange: 1,
+			attackRange: 2,
 			defense: armor.defense * 1, // TODO Add a dynamic mod for game piece type
 			type: isNPC ? 'NPC' : 'PC'
 		};
@@ -206,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		}
 
 		currentSelectedTile = gamePiece;
-		gamePiece.color = HIGHLIGHT_COLOR;
+		gamePiece.color = gamePiece.type === 'PC' ? GAME_PIECE_HIGHLIGHT_COLOR_PC : GAME_PIECE_HIGHLIGHT_COLOR_NPC;
 
 		gamePieceName.innerHTML = gamePiece.name;
 		gamePieceHealth.innerHTML = gamePiece.health + " / " + gamePiece.currentHP;
