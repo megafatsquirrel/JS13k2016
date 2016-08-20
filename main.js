@@ -1,9 +1,6 @@
 // TODO tasklist
-
-// create event for selecting game pieces
-// create game piece interactions (move, attack, special abilities)
-// create game piece UI
 // create game work flow, turned based combat
+// create game piece interactions (move, attack, special abilities)
 // create menu, start, and other screens
 // create game piece classes
 // create game piece monsters
@@ -11,14 +8,15 @@
 // create game piece items
 // create game piece armor
 
-
 document.addEventListener('DOMContentLoaded', function(e) {
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
 
 	var CLEAR_COLOR = '#FFFFFF';
-	var GAME_PIECE_DEFAULT_COLOR = '#da4040';
-	var HIGHLIGHT_COLOR = '#f5ed09';
+	var GAME_PIECE_DEFAULT_COLOR_NPC = '#ffc107';
+	var GAME_PIECE_DEFAULT_COLOR_PC = '#d40dcb';
+	var HIGHLIGHT_COLOR = '#7e98e8';
+	var HIGHLIGHT_COLOR_ATTACK = '#ef0f0f';
 
 	var gameRound = 0;
 
@@ -52,15 +50,17 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var weapon1 = { name: 'dagger', damage: 2 };
 	var armor1 = { name: 'rags', defense: 1 };
 	var gamePieceGoblin = createGamePiece(gameMap[0][0].left, gameMap[0][0].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR, 'goblin', {x: 0, y: 0}, 'Goblin', '10', 4, weapon1, armor1, true);
+									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: 0, y: 0}, 'Goblin', '10', 4, weapon1, armor1, true);
 	gameMap[0][0].occupied = true;
+	gameMap[0][0].occupiedType = gamePieceGoblin.type;
 	gameMap[0][0].gamePieceId = gamePieceGoblin.id;
 
-	var gamePieceHero = createGamePiece(gameMap[11][1].left, gameMap[11][1].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR, 'hero', {x: 11, y: 1}, 'Hero', '12', 4, weapon1, armor1, false);
+	var gamePieceHero = createGamePiece(gameMap[1][1].left, gameMap[1][1].top, TILE_WIDTH, TILE_HEIGHT, 
+									GAME_PIECE_DEFAULT_COLOR_PC, 'hero', {x: 1, y: 1}, 'Hero', '12', 4, weapon1, armor1, false);
 
-	gameMap[11][1].occupied = true;
-	gameMap[11][1].gamePieceId = gamePieceHero.id;
+	gameMap[1][1].occupied = true;
+	gameMap[1][1].occupiedType = gamePieceHero.type;
+	gameMap[1][1].gamePieceId = gamePieceHero.id;
 	var gameObjects = new Array(gamePieceGoblin, gamePieceHero);
 
 	function createGamePiece(left, top, width, height, color, id, location, name, health, movement, weapon, armor, isNPC) {
@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			weapon: weapon,
 			armor: armor,
 			attack: weapon.damage * 1, // TODO Add a dynamic mod for game piece type
+			attackRange: 1,
 			defense: armor.defense * 1, // TODO Add a dynamic mod for game piece type
 			type: isNPC ? 'NPC' : 'PC'
 		};
@@ -98,7 +99,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			color: color,
 			gamePieceId: '',
 			isHighlight: false,
+			isHighlightAttack: false,
 			occupied: false,
+			occupiedType: '',
 			type: 'NORMAL'
 		};
 
@@ -159,9 +162,11 @@ document.addEventListener('DOMContentLoaded', function(e) {
 									currentGamePiece.left = gameMap[indexX][indexY].left;
 									currentGamePiece.top = gameMap[indexX][indexY].top;
 									gameMap[currentGamePiece.location.x][currentGamePiece.location.y].occupied = false;
+									gameMap[currentGamePiece.location.x][currentGamePiece.location.y].occupiedType = '';
 									gameMap[currentGamePiece.location.x][currentGamePiece.location.y].gamePieceId = '';
 									currentGamePiece.location = {x: indexX, y: indexY};
 									gameMap[indexX][indexY].occupied = true;
+									gameMap[indexX][indexY].occupiedType = currentGamePiece.type;
 									gameMap[indexX][indexY].gamePieceId = currentGamePiece.id;
 									gameObjects[i].hasMoved = true;
 									currentSelectedTile = currentGamePiece;
@@ -215,26 +220,50 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		gamePieceInfoDisplay.style.display = 'block';
 		gamePieceInfoDisplayDefault.style.display = 'none';
 
+		var rightTile;
+		var leftTile;
+		var topTile;
+		var downTile;
 		if (!gamePiece.hasMoved && gamePiece.type === 'PC'){
 			for(var i = 1; i <= gamePiece.movement; i++){
 				// right
 				if (gamePiece.location.x + i < MAP_WIDTH){
-					gameMap[gamePiece.location.x + i][gamePiece.location.y].isHighlight = true;
+					rightTile = gameMap[gamePiece.location.x + i][gamePiece.location.y];
+					if (rightTile.occupied && rightTile.occupiedType === 'NPC' && (gamePiece.attackRange - i) > 0){
+						rightTile.isHighlightAttack = true;
+					}else if (!rightTile.occupied) {
+						rightTile.isHighlight = true;	
+					}
 					selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x + i, false);
 				}
 				// left
 				if (gamePiece.location.x - i >= 0){
-					gameMap[gamePiece.location.x - i][gamePiece.location.y].isHighlight = true;
+					leftTile = gameMap[gamePiece.location.x - i][gamePiece.location.y];
+					if (leftTile.occupied && leftTile.occupiedType === 'NPC' && (gamePiece.attackRange - i) > 0){
+						leftTile.isHighlightAttack = true;
+					}else if (!leftTile.occupied) {
+						leftTile.isHighlight = true;	
+					}
 					selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x - i, true);
 				}
 				// top
 				if (gamePiece.location.y - i >= 0){
-					gameMap[gamePiece.location.x][gamePiece.location.y - i].isHighlight = true;
+					topTile = gameMap[gamePiece.location.x][gamePiece.location.y - i];
+					if (topTile.occupied && topTile.occupiedType === 'NPC' && (gamePiece.attackRange - i) > 0){
+						topTile.isHighlightAttack = true;
+					}else if (!topTile.occupied) {
+						topTile.isHighlight = true;	
+					}
 					selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y - i, true);
 				}
 				// down
 				if (gamePiece.location.y + i < MAP_HEIGHT){
-					gameMap[gamePiece.location.x][gamePiece.location.y + i].isHighlight = true;
+					downTile = gameMap[gamePiece.location.x][gamePiece.location.y + i];
+					if (downTile.occupied && downTile.occupiedType === 'NPC' && (gamePiece.attackRange - i) > 0){
+
+					}else if (!downTile.occupied){
+						downTile.isHighlight = true;
+					}
 					selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y + i, false);
 				}
 			}
@@ -245,11 +274,21 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		for(var i = 1; i <= movement; i++){
 			if (!reverse){
 				if (gamePiece.location.y + i < MAP_HEIGHT){
-					gameMap[index][gamePiece.location.y + i].isHighlight = true;
+					var tile = gameMap[index][gamePiece.location.y + i];
+					if (tile.occupied && tile.occupiedType === 'NPC' && (gamePiece.attackRange - i) >= 0) {
+						tile.isHighlightAttack = true;
+					}else if (!tile.occupied) {
+						tile.isHighlight = true;
+					}
 				}
 			}else{
 				if (gamePiece.location.y - i >= 0){
-					gameMap[index][gamePiece.location.y - i].isHighlight = true;
+					var tile = gameMap[index][gamePiece.location.y - i];
+					if (tile.occupied && tile.occupiedType === 'NPC' && (gamePiece.attackRange - i) >= 0){
+						tile.isHighlightAttack = true;
+					}else if (!tile.occupied){
+						tile.isHighlight = true;
+					}
 				}
 			}
 		}
@@ -258,12 +297,22 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function selectDownTiles(gamePiece, movement, index, reverse){
 		for(var i = 1; i <= movement; i++){
 			if (!reverse){
-				if (gamePiece.location.x - i >= 0){				
-					gameMap[gamePiece.location.x - i][index].isHighlight = true;
+				if (gamePiece.location.x - i >= 0){
+					var tile = gameMap[gamePiece.location.x - i][index];
+					if (tile.occupied && tile.occupiedType === 'NPC' && (gamePiece.attackRange - i) >= 0) {
+						tile.isHighlightAttack = true;
+					}else if (!tile.occupied) {
+						tile.isHighlight = true;
+					}
 				}
 			}else{
-				if (gamePiece.location.x + i < MAP_WIDTH){				
-					gameMap[gamePiece.location.x + i][index].isHighlight = true;
+				if (gamePiece.location.x + i < MAP_WIDTH){
+					var tile = gameMap[gamePiece.location.x + i][index];
+					if (tile.occupied && tile.occupiedType === 'NPC' && (gamePiece.attackRange - i) >= 0) {
+						tile.isHighlightAttack = true;
+					}else if (!tile.occupied) {
+						tile.isHighlight = true;
+					}
 				}
 			}
 		}
@@ -272,8 +321,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function deselectGameMapTiles() {
 		for (var i = 0; i < MAP_WIDTH; i++){
 			for (var j = 0; j < MAP_HEIGHT; j++){
-				if (gameMap[i][j].isHighlight) {
+				if (gameMap[i][j].isHighlight || gameMap[i][j].isHighlightAttack) {
 					gameMap[i][j].isHighlight = false;
+					gameMap[i][j].isHighlightAttack = false;
 				}
 			}
 		}
@@ -281,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 	function deselectGamePiece(gamePiece){
 		currentSelectedTile = null;
-		gamePiece.color = GAME_PIECE_DEFAULT_COLOR;
+		gamePiece.color = gamePiece.type === 'PC' ? GAME_PIECE_DEFAULT_COLOR_PC : GAME_PIECE_DEFAULT_COLOR_NPC;
 		gamePieceInfoDisplay.style.display = 'none';
 		gamePieceInfoDisplayDefault.style.display = 'block';
 		deselectGameMapTiles();
@@ -298,6 +348,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		for (var i = 0; i < MAP_WIDTH; i++){
 			for (var j = 0; j < MAP_HEIGHT; j++){
 				ctx.fillStyle = gameMap[i][j].isHighlight ? HIGHLIGHT_COLOR : gameMap[i][j].color;
+				if (gameMap[i][j].isHighlightAttack)
+					ctx.fillStyle = HIGHLIGHT_COLOR_ATTACK;
 				ctx.fillRect(gameMap[i][j].left, 
 					gameMap[i][j].top, 
 					gameMap[i][j].width, 
@@ -318,6 +370,25 @@ document.addEventListener('DOMContentLoaded', function(e) {
 				gameObjects[i].top, 
 				gameObjects[i].width, 
 				gameObjects[i].height);
+		}
+
+		// draw overlay
+		for (var i = 0; i < MAP_WIDTH; i++){
+			for (var j = 0; j < MAP_HEIGHT; j++){
+				if (gameMap[i][j].isHighlightAttack || gameMap[i][j].isHighlight){
+				ctx.fillStyle = gameMap[i][j].isHighlight ? HIGHLIGHT_COLOR : HIGHLIGHT_COLOR_ATTACK;
+				ctx.fillRect(gameMap[i][j].left, 
+					gameMap[i][j].top, 
+					gameMap[i][j].width, 
+					gameMap[i][j].height);
+
+				ctx.fillStyle = '#000000';
+				ctx.strokeRect(gameMap[i][j].left, 
+					gameMap[i][j].top, 
+					gameMap[i][j].width, 
+					gameMap[i][j].height);
+				}
+			}
 		}
 	}
 
