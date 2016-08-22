@@ -52,20 +52,20 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var weapon1 = { name: 'dagger', damage: 2 };
 	var armor1 = { name: 'rags', defense: 1 };
 	var gamePieceGoblin = createGamePiece(gameMap[0][0].left, gameMap[0][0].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: 0, y: 0}, 'Goblin', '10', 4, weapon1, armor1, true);
+									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: 0, y: 0}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
 	gameMap[0][0].occupied = true;
 	gameMap[0][0].occupiedType = gamePieceGoblin.type;
 	gameMap[0][0].gamePieceId = gamePieceGoblin.id;
 
 	var gamePieceHero = createGamePiece(gameMap[1][1].left, gameMap[1][1].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_PC, 'hero', {x: 1, y: 1}, 'Hero', '12', 4, weapon1, armor1, false);
+									GAME_PIECE_DEFAULT_COLOR_PC, 'hero', {x: 1, y: 1}, 'Hero', 12, 4, weapon1, armor1, 0, false);
 
 	gameMap[1][1].occupied = true;
 	gameMap[1][1].occupiedType = gamePieceHero.type;
 	gameMap[1][1].gamePieceId = gamePieceHero.id;
 	var gameObjects = new Array(gamePieceGoblin, gamePieceHero);
 
-	function createGamePiece(left, top, width, height, color, id, location, name, health, movement, weapon, armor, isNPC) {
+	function createGamePiece(left, top, width, height, color, id, location, name, health, movement, weapon, armor, exp, isNPC) {
 		// TODO refactor this into a base case for all pieces
 		// TODO find a way to enforce a unique id
 		var temp = {
@@ -87,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			attack: weapon.damage * 1, // TODO Add a dynamic mod for game piece type
 			attackRange: 2,
 			defense: armor.defense * 1, // TODO Add a dynamic mod for game piece type
+			exp: exp,
 			type: isNPC ? 'NPC' : 'PC'
 		};
 
@@ -114,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var gamePieceInfoCard = document.getElementById('gamePieceInfoCard');
 	var gamePieceName = document.getElementById('gamePieceName');
 	var gamePieceHealth = document.getElementById('gamePieceHealth');
+	var gamePieceExp = document.getElementById('gamePieceExp');
 	var gamePieceAttack = document.getElementById('gamePieceAttack');
 	var gamePieceDefense = document.getElementById('gamePieceDefense');
 	var gamePieceWeapon = document.getElementById('gamePieceWeapon');
@@ -122,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var gamePieceHasMoved = document.getElementById('gamePieceHasMoved');
 	var gamePieceInfoDisplay = document.getElementById('gamePieceInfoDisplay');
 	var gamePieceInfoDisplayDefault = document.getElementById('gamePieceInfoDisplayDefault');
+	var gamePieceHasAttacked = document.getElementById('gamePieceHasAttacked');
 	var currentRound = document.getElementById('currentRound');
 
 	var endTurnBtn = document.getElementById('endTurnBtn');
@@ -167,6 +170,10 @@ document.addEventListener('DOMContentLoaded', function(e) {
 										var damage = currentSelectedTile.attack;
 										// TODO handle death and giving XP
 										enemy.currentHP -= damage;
+										if (enemy.currentHP <= 0){
+											currentSelectedTile.exp += enemy.exp;
+											gameObjects.splice(i, 1);
+										}
 										currentSelectedTile.hasMoved = true;
 										currentSelectedTile.hasAttacked = true;
 										showDamageNumber(enemy, damage);
@@ -231,15 +238,22 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		currentSelectedTile = gamePiece;
 		gamePiece.color = gamePiece.type === 'PC' ? GAME_PIECE_HIGHLIGHT_COLOR_PC : GAME_PIECE_HIGHLIGHT_COLOR_NPC;
 
+
+
 		gamePieceName.innerHTML = gamePiece.name;
 		gamePieceHealth.innerHTML = gamePiece.currentHP + " / " + gamePiece.health;
-		gamePieceMovement.innerHTML = gamePiece.movement;
-		gamePieceAttack.innerHTML = gamePiece.attack;
-		gamePieceDefense.innerHTML = gamePiece.defense;
-		gamePieceWeapon.innerHTML = gamePiece.weapon.name;
-		gamePieceArmor.innerHTML = gamePiece.armor.name;
-		gamePieceHasMoved.innerHTML = gamePiece.hasMoved;
-
+		
+		if (gamePiece.type === 'PC') {
+			gamePieceExp.innerHTML = gamePiece.exp;	
+			gamePieceMovement.innerHTML = gamePiece.movement;
+			gamePieceAttack.innerHTML = gamePiece.attack;
+			gamePieceDefense.innerHTML = gamePiece.defense;
+			gamePieceWeapon.innerHTML = gamePiece.weapon.name;
+			gamePieceArmor.innerHTML = gamePiece.armor.name;
+			gamePieceHasMoved.innerHTML = gamePiece.hasMoved;
+			gamePieceHasAttacked.innerHTML = gamePiece.hasAttacked;
+		}
+		
 		gamePieceInfoDisplay.style.display = 'block';
 		gamePieceInfoDisplayDefault.style.display = 'none';
 
