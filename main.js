@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			weapon: weapon,
 			armor: armor,
 			attack: weapon.damage * 1, // TODO Add a dynamic mod for game piece type
-			attackRange: 2,
+			attackRange: 1,
 			defense: armor.defense * 1, // TODO Add a dynamic mod for game piece type
 			type: isNPC ? 'NPC' : 'PC'
 		};
@@ -222,36 +222,42 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		gamePieceInfoDisplay.style.display = 'block';
 		gamePieceInfoDisplayDefault.style.display = 'none';
 
+		
+		if (gamePiece.type === 'PC'){
+			if (!gamePiece.hasMoved)
+				highlightMovementArea(gamePiece);
+		}
+	}
+
+	function highlightMovementArea(gamePiece) {
 		var rightTile;
 		var leftTile;
 		var topTile;
 		var downTile;
-		if (gamePiece.type === 'PC'){
-			for(var i = 1; i <= gamePiece.movement; i++){
-				// right
-				if (gamePiece.location.x + i < MAP_WIDTH){
-					rightTile = gameMap[gamePiece.location.x + i][gamePiece.location.y];
-					checkTileMoveAttack(rightTile, gamePiece, i);
-					selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x + i, false);
-				}
-				// left
-				if (gamePiece.location.x - i >= 0){
-					leftTile = gameMap[gamePiece.location.x - i][gamePiece.location.y];
-					checkTileMoveAttack(leftTile, gamePiece, i);
-					selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x - i, true);
-				}
-				// top
-				if (gamePiece.location.y - i >= 0){
-					topTile = gameMap[gamePiece.location.x][gamePiece.location.y - i];
-					checkTileMoveAttack(topTile, gamePiece, i);
-					selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y - i, true);
-				}
-				// down
-				if (gamePiece.location.y + i < MAP_HEIGHT){
-					downTile = gameMap[gamePiece.location.x][gamePiece.location.y + i];
-					checkTileMoveAttack(downTile, gamePiece, i);
-					selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y + i, false);
-				}
+		for(var i = 1; i <= gamePiece.movement; i++){
+			// right
+			if (gamePiece.location.x + i < MAP_WIDTH){
+				rightTile = gameMap[gamePiece.location.x + i][gamePiece.location.y];
+				checkTileMoveAttack(rightTile, gamePiece);
+				selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x + i, false);
+			}
+			// left
+			if (gamePiece.location.x - i >= 0){
+				leftTile = gameMap[gamePiece.location.x - i][gamePiece.location.y];
+				checkTileMoveAttack(leftTile, gamePiece);
+				selectSideTiles(gamePiece, gamePiece.movement - i, gamePiece.location.x - i, true);
+			}
+			// top
+			if (gamePiece.location.y - i >= 0){
+				topTile = gameMap[gamePiece.location.x][gamePiece.location.y - i];
+				checkTileMoveAttack(topTile, gamePiece);
+				selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y - i, true);
+			}
+			// down
+			if (gamePiece.location.y + i < MAP_HEIGHT){
+				downTile = gameMap[gamePiece.location.x][gamePiece.location.y + i];
+				checkTileMoveAttack(downTile, gamePiece);
+				selectDownTiles(gamePiece, gamePiece.movement - i, gamePiece.location.y + i, false);
 			}
 		}
 	}
@@ -261,21 +267,19 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			if (!reverse){
 				if (gamePiece.location.y + i < MAP_HEIGHT){
 					var tile = gameMap[index][gamePiece.location.y + i];
-					checkTileMoveAttack(tile, gamePiece, i);
+					checkTileMoveAttack(tile, gamePiece);
 				}
 			}else{
 				if (gamePiece.location.y - i >= 0){
 					var tile = gameMap[index][gamePiece.location.y - i];
-					checkTileMoveAttack(tile, gamePiece, i);
+					checkTileMoveAttack(tile, gamePiece);
 				}
 			}
 		}
 	}
 
-	function checkTileMoveAttack(tile, gamePiece, index) {
-		if (tile.occupied && tile.occupiedType === 'NPC' && (gamePiece.attackRange - index) >= 0){
-			tile.isHighlightAttack = true;
-		}else if (!tile.occupied && !gamePiece.hasMoved){
+	function checkTileMoveAttack(tile, gamePiece) {
+		if (!tile.occupied){
 			tile.isHighlight = true;
 		}
 	}
@@ -285,12 +289,12 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			if (!reverse){
 				if (gamePiece.location.x - i >= 0){
 					var tile = gameMap[gamePiece.location.x - i][index];
-					checkTileMoveAttack(tile, gamePiece, i);
+					checkTileMoveAttack(tile, gamePiece);
 				}
 			}else{
 				if (gamePiece.location.x + i < MAP_WIDTH){
 					var tile = gameMap[gamePiece.location.x + i][index];
-					checkTileMoveAttack(tile, gamePiece, i);
+					checkTileMoveAttack(tile, gamePiece);
 				}
 			}
 		}
