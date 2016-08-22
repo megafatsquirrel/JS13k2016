@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			}
 		}
 	}
-	var gameMapOverlay = gameMap;
+	
 	// setup game objects
 	var weapon1 = { name: 'dagger', damage: 2 };
 	var armor1 = { name: 'rags', defense: 1 };
@@ -148,6 +148,15 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 			clickXoutput.innerHTML = clickX;
 			clickYoutput.innerHTML = clickY;
+
+			var btnX = (e.clientX - canvas.parentElement.offsetLeft) + document.scrollingElement.scrollLeft;
+			var btnY = (e.clientY - canvas.parentElement.offsetTop) + document.scrollingElement.scrollTop;
+			if (!gameStart && btnX >= startBtn.left && btnX <= (startBtn.left + startBtn.width) &&
+				btnY >= startBtn.top && btnY <= (startBtn.top + startBtn.height)) {
+				gameStart = true;
+				
+			}
+
 
 			if ( clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
 				var indexX = parseInt(clickX / TILE_WIDTH);
@@ -408,44 +417,36 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		ctx.fillRect(canvas.offsetLeft, canvas.offsetTop, canvas.width, canvas.height);
 	}
 
+	var gameStart = false;
+	var startBtn = {
+		color: '#000000',
+		left: canvas.width/2 - 200,
+		top: canvas.width/2 - 150,
+		width: 400,
+		height: 100
+	};
+	function gameMenuOverlay(){
+		// ctx.fillStyle = "#FFFFFF";
+		// ctx.fillRect(canvas.offsetLeft, canvas.offsetTop, canvas.width, canvas.height);
+		ctx.fillStyle = startBtn.color;
+		ctx.fillRect(startBtn.left, startBtn.top, startBtn.width, startBtn.height);
+		
+		// TODO add click handler for the button and game menu
+		ctx.font = '48px serif';
+		ctx.fillStyle = '#FFFFFF';
+		ctx.fillText("START", canvas.width/2 - 70, canvas.height/2 + 15);
+	}
+
 	function render(){
 		clearScreen();
-		// draw map
-		for (var i = 0; i < MAP_WIDTH; i++){
-			for (var j = 0; j < MAP_HEIGHT; j++){
-				ctx.fillStyle = gameMap[i][j].color;
-				
-				ctx.fillRect(gameMap[i][j].left, 
-					gameMap[i][j].top, 
-					gameMap[i][j].width, 
-					gameMap[i][j].height);
 
-				ctx.fillStyle = '#000000';
-				ctx.strokeRect(gameMap[i][j].left, 
-					gameMap[i][j].top, 
-					gameMap[i][j].width, 
-					gameMap[i][j].height);
-			}
-		}
-
-		// draw game objects
-		for (var i = 0; i < gameObjects.length; i++) {
-			ctx.fillStyle = gameObjects[i].color;
-			ctx.fillRect(gameObjects[i].left, 
-				gameObjects[i].top, 
-				gameObjects[i].width, 
-				gameObjects[i].height);
-		}
-
-		// draw overlay
-		for (var i = 0; i < MAP_WIDTH; i++){
-			for (var j = 0; j < MAP_HEIGHT; j++){
-				if (gameMap[i][j].isHighlightAttack || gameMap[i][j].isHighlightMove){
-
-					if (gameMap[i][j].isHighlightMove)
-						ctx.fillStyle = HIGHLIGHT_COLOR_MOVE;
-					if (gameMap[i][j].isHighlightAttack)
-						ctx.fillStyle = HIGHLIGHT_COLOR_ATTACK;
+		if (!gameStart) {
+			gameMenuOverlay();
+		}else{
+			// draw map
+			for (var i = 0; i < MAP_WIDTH; i++){
+				for (var j = 0; j < MAP_HEIGHT; j++){
+					ctx.fillStyle = gameMap[i][j].color;
 					
 					ctx.fillRect(gameMap[i][j].left, 
 						gameMap[i][j].top, 
@@ -459,19 +460,52 @@ document.addEventListener('DOMContentLoaded', function(e) {
 						gameMap[i][j].height);
 				}
 			}
-		}
 
-		// show damage number 
-		if (numberOverlay !== null) {
-			ctx.font = '48px serif';
-			ctx.fillStyle = '#000';
-  			ctx.fillText(numberOverlay.damage, numberOverlay.x, numberOverlay.y);
-		}
+			// draw game objects
+			for (var i = 0; i < gameObjects.length; i++) {
+				ctx.fillStyle = gameObjects[i].color;
+				ctx.fillRect(gameObjects[i].left, 
+					gameObjects[i].top, 
+					gameObjects[i].width, 
+					gameObjects[i].height);
+			}
 
-		if (messageOverlay !== null) {
-			ctx.font = '48px serif';
-			ctx.fillStyle = '#000';
-  			ctx.fillText(messageOverlay.msg, messageOverlay.x, messageOverlay.y);
+			// draw overlay
+			for (var i = 0; i < MAP_WIDTH; i++){
+				for (var j = 0; j < MAP_HEIGHT; j++){
+					if (gameMap[i][j].isHighlightAttack || gameMap[i][j].isHighlightMove){
+
+						if (gameMap[i][j].isHighlightMove)
+							ctx.fillStyle = HIGHLIGHT_COLOR_MOVE;
+						if (gameMap[i][j].isHighlightAttack)
+							ctx.fillStyle = HIGHLIGHT_COLOR_ATTACK;
+						
+						ctx.fillRect(gameMap[i][j].left, 
+							gameMap[i][j].top, 
+							gameMap[i][j].width, 
+							gameMap[i][j].height);
+
+						ctx.fillStyle = '#000000';
+						ctx.strokeRect(gameMap[i][j].left, 
+							gameMap[i][j].top, 
+							gameMap[i][j].width, 
+							gameMap[i][j].height);
+					}
+				}
+			}
+
+			// show damage number 
+			if (numberOverlay !== null) {
+				ctx.font = '48px serif';
+				ctx.fillStyle = '#000';
+	  			ctx.fillText(numberOverlay.damage, numberOverlay.x, numberOverlay.y);
+			}
+
+			if (messageOverlay !== null) {
+				ctx.font = '48px serif';
+				ctx.fillStyle = '#000';
+	  			ctx.fillText(messageOverlay.msg, messageOverlay.x, messageOverlay.y);
+			}
 		}
 	}
 
