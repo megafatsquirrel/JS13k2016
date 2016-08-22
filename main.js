@@ -164,9 +164,11 @@ document.addEventListener('DOMContentLoaded', function(e) {
 								var enemy = gameObjects[i];
 								if (mapTile.gamePieceId === enemy.id){
 									if (enemy.type === 'NPC'){
-										enemy.currentHP -= currentSelectedTile.attack;
+										var damage = currentSelectedTile.attack;
+										enemy.currentHP -= damage;
 										currentSelectedTile.hasMoved = true;
 										currentSelectedTile.hasAttacked = true;
+										showDamageNumber(enemy, damage);
 									}
 								}
 							}
@@ -340,6 +342,19 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		deselectGameMapTiles();
 	}
 
+	var numberOverlay = null;
+	function showDamageNumber(gamePiece, damage) {
+		numberOverlay = {
+			x: gamePiece.location.x + MAP_OFFSET_LEFT,
+			y: gamePiece.location.y + MAP_OFFSET_TOP,
+			damage: damage
+		};
+
+		setTimeout(function() {
+			numberOverlay = null;
+		}, 1000);
+	}
+
 	function clearScreen(){
 		ctx.fillStyle = CLEAR_COLOR;
 		ctx.fillRect(canvas.offsetLeft, canvas.offsetTop, canvas.width, canvas.height);
@@ -397,9 +412,14 @@ document.addEventListener('DOMContentLoaded', function(e) {
 				}
 			}
 		}
+
+		// show damage number 
+		if (numberOverlay !== null) {
+			ctx.font = '48px serif';
+			ctx.fillStyle = '#000';
+  			ctx.fillText('-' + numberOverlay.damage, numberOverlay.x, numberOverlay.y);
+		}
 	}
-
-
 
 	function logic(){
 		
