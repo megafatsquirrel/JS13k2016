@@ -173,10 +173,14 @@ document.addEventListener('DOMContentLoaded', function(e) {
 										if (enemy.currentHP <= 0){
 											currentSelectedTile.exp += enemy.exp;
 											gameObjects.splice(i, 1);
+
+											if (isGameOver()) {
+												showGameMessage(300, 300, 'WINNER!', false);
+											}
 										}
 										currentSelectedTile.hasMoved = true;
 										currentSelectedTile.hasAttacked = true;
-										showDamageNumber(enemy, damage);
+										showDamageNumber(enemy, '-' + damage);
 									}
 								}
 							}
@@ -228,6 +232,16 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			gameRound++;
 			currentRound.innerHTML = gameRound;
 		});
+	}
+
+	function isGameOver(){
+		for (var i = 0; i < gameObjects.length; i++) {
+			if (gameObjects[i].type === 'NPC'){
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	function selectGamePiece(gamePiece){
@@ -372,6 +386,23 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		}, 1000);
 	}
 
+	var messageOverlay = null;
+	var messageOverlayTimeoutId = null;
+	function showGameMessage(x, y, msg, isTimed) {
+		messageOverlay = {
+			x: x,
+			y: y,
+			msg: msg
+		};
+
+		if (isTimed){
+			messageOverlayTimeoutId = window.setTimeout(function() {
+				messageOverlay = null;
+				this.clearTimeout(messageOverlayTimeoutId);
+			}, 5000);	
+		}
+	}
+
 	function clearScreen(){
 		ctx.fillStyle = CLEAR_COLOR;
 		ctx.fillRect(canvas.offsetLeft, canvas.offsetTop, canvas.width, canvas.height);
@@ -434,7 +465,13 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		if (numberOverlay !== null) {
 			ctx.font = '48px serif';
 			ctx.fillStyle = '#000';
-  			ctx.fillText('-' + numberOverlay.damage, numberOverlay.x, numberOverlay.y);
+  			ctx.fillText(numberOverlay.damage, numberOverlay.x, numberOverlay.y);
+		}
+
+		if (messageOverlay !== null) {
+			ctx.font = '48px serif';
+			ctx.fillStyle = '#000';
+  			ctx.fillText(messageOverlay.msg, messageOverlay.x, messageOverlay.y);
 		}
 	}
 
