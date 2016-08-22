@@ -165,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 								if (mapTile.gamePieceId === enemy.id){
 									if (enemy.type === 'NPC'){
 										var damage = currentSelectedTile.attack;
+										// TODO handle death and giving XP
 										enemy.currentHP -= damage;
 										currentSelectedTile.hasMoved = true;
 										currentSelectedTile.hasAttacked = true;
@@ -246,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			if (!gamePiece.hasMoved)
 				highlightMoveAttackArea(gamePiece, gamePiece.movement, false);
 			if (!gamePiece.hasAttacked)
-			highlightMoveAttackArea(gamePiece, gamePiece.attackRange, true);
+				highlightMoveAttackArea(gamePiece, gamePiece.attackRange, true);
 		}
 	}
 
@@ -343,6 +344,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	}
 
 	var numberOverlay = null;
+	var numberOverlayTimeoutId = null;
 	function showDamageNumber(gamePiece, damage) {
 		numberOverlay = {
 			x: gamePiece.location.x + MAP_OFFSET_LEFT,
@@ -350,8 +352,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			damage: damage
 		};
 
-		setTimeout(function() {
+		numberOverlayTimeoutId = window.setTimeout(function() {
 			numberOverlay = null;
+			this.clearTimeout(numberOverlayTimeoutId);
 		}, 1000);
 	}
 
