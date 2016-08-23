@@ -63,7 +63,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	gameMap[1][1].occupied = true;
 	gameMap[1][1].occupiedType = gamePieceHero.type;
 	gameMap[1][1].gamePieceId = gamePieceHero.id;
-	var gameObjects = new Array(gamePieceGoblin, gamePieceHero);
+	var heroPieces = new Array(gamePieceHero);
+	var enemyPieces = new Array(gamePieceGoblin);
 
 	function createGamePiece(left, top, width, height, color, id, location, name, health, movement, weapon, armor, exp, isNPC) {
 		// TODO refactor this into a base case for all pieces
@@ -164,7 +165,12 @@ document.addEventListener('DOMContentLoaded', function(e) {
 				if (indexX >= 0 && indexY >= 0 && indexX <= MAP_WIDTH && indexY <= MAP_HEIGHT) {
 					var mapTile = gameMap[indexX][indexY];
 					if (mapTile !== undefined && mapTile.occupied && !mapTile.isHighlightAttack) {
-						gameObjects.forEach(function(item) {
+						heroPieces.forEach(function(item) {
+							if (item.id === mapTile.gamePieceId) {
+								selectGamePiece(item);
+							}
+						});
+						enemyPieces.forEach(function(item) {
 							if (item.id === mapTile.gamePieceId) {
 								selectGamePiece(item);
 							}
@@ -172,15 +178,15 @@ document.addEventListener('DOMContentLoaded', function(e) {
 					}else if (currentSelectedTile !== null){ // clicked outside of the occupied square
 						// attack piece
 						if (!currentSelectedTile.hasAttacked && mapTile.occupied && mapTile.isHighlightAttack && currentSelectedTile.type === 'PC'){
-							for (var i = 0; i < gameObjects.length; i++) {
-								var enemy = gameObjects[i];
+							for (var i = 0; i < enemyPieces.length; i++) {
+								var enemy = enemyPieces[i];
 								if (mapTile.gamePieceId === enemy.id){
 									if (enemy.type === 'NPC'){
 										var damage = currentSelectedTile.attack;
 										enemy.currentHP -= damage;
 										if (enemy.currentHP <= 0){
 											currentSelectedTile.exp += enemy.exp;
-											gameObjects.splice(i, 1);
+											enemyPieces.splice(i, 1);
 
 											if (isGameOver()) {
 												showGameMessage(300, 300, 'WINNER!', false);
@@ -196,14 +202,19 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 						// move piece
 						if (!currentSelectedTile.hasMoved && !mapTile.occupied && mapTile.isHighlightMove && currentSelectedTile.type === 'PC'){
-							for (var i = 0; i < gameObjects.length; i++) {
-								if (currentSelectedTile.id === gameObjects[i].id){
-									moveGamePiece(gameObjects[i], indexX, indexY);
+							for (var i = 0; i < heroPieces.length; i++) {
+								if (currentSelectedTile.id === heroPieces[i].id){
+									moveGamePiece(heroPieces[i], indexX, indexY);
 								}
 							}
 						}
 
-						gameObjects.forEach(function(item) {
+						heroPieces.forEach(function(item) {
+							if (currentSelectedTile !== null && item.id === currentSelectedTile.id) {
+								deselectGamePiece(item);
+							}
+						});
+						enemyPieces.forEach(function(item) {
 							if (currentSelectedTile !== null && item.id === currentSelectedTile.id) {
 								deselectGamePiece(item);
 							}
@@ -211,7 +222,12 @@ document.addEventListener('DOMContentLoaded', function(e) {
 					}
 				}				
 			}else if (currentSelectedTile !== null){ // clicked outside of the map
-				gameObjects.forEach(function(item) {
+				heroPieces.forEach(function(item) {
+					if (currentSelectedTile !== null && item.id === currentSelectedTile.id) {
+						deselectGamePiece(item);
+					}
+				});
+				enemyPieces.forEach(function(item) {
 					if (currentSelectedTile !== null && item.id === currentSelectedTile.id) {
 						deselectGamePiece(item);
 					}
@@ -241,26 +257,34 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	}
 
 	function enemyLogic(){
-		enemyPhase = true;
-		for (var i = 0; i < gameObjects.length; i++) {
-			if (gameObjects[i].type === 'NPC'){
-				moveGamePiece(gameObjects[i], 3, 0);
+		for (var i = 0; i < enemyPieces.length; i++) {
+			var hero = heroPieces[0];
+			var distanceX = hero.location.x - enemyPieces[i].location.x;
+			var distanceY = hero.location.y - enemyPieces[i].location.y;
+			if (distanceX > 0){
+				var moveAmount = distanceX > 4 ? enemyPieces[i].movement : distanceX;
+				moveGamePiece(enemyPieces[i], moveAmount, 0);
 			}
 		}
+		endOfRound();
 	}
 
 	function endOfRound(){
-		for (var i = 0; i < gameObjects.length; i++) {
-			gameObjects[i].hasMoved = false;
-			gameObjects[i].hasAttacked = false;
+		for (var i = 0; i < heroPieces.length; i++) {
+			heroPieces[i].hasMoved = false;
+			heroPieces[i].hasAttacked = false;
+		}
+		for (var i = 0; i < enemyPieces.length; i++) {
+			enemyPieces[i].hasMoved = false;
+			enemyPieces[i].hasAttacked = false;
 		}
 		gameRound++;
 		currentRound.innerHTML = gameRound;
 	}
 
 	function isGameOver(){
-		for (var i = 0; i < gameObjects.length; i++) {
-			if (gameObjects[i].type === 'NPC'){
+		for (var i = 0; i < enemyPieces.length; i++) {
+			if (enemyPieces[i].type === 'NPC'){
 				return false;
 			}
 		}
@@ -475,12 +499,19 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			}
 
 			// draw game objects
-			for (var i = 0; i < gameObjects.length; i++) {
-				ctx.fillStyle = gameObjects[i].color;
-				ctx.fillRect(gameObjects[i].left, 
-					gameObjects[i].top, 
-					gameObjects[i].width, 
-					gameObjects[i].height);
+			for (var i = 0; i < heroPieces.length; i++) {
+				ctx.fillStyle = heroPieces[i].color;
+				ctx.fillRect(heroPieces[i].left, 
+					heroPieces[i].top, 
+					heroPieces[i].width, 
+					heroPieces[i].height);
+			}
+			for (var i = 0; i < enemyPieces.length; i++) {
+				ctx.fillStyle = enemyPieces[i].color;
+				ctx.fillRect(enemyPieces[i].left, 
+					enemyPieces[i].top, 
+					enemyPieces[i].width, 
+					enemyPieces[i].height);
 			}
 
 			// draw overlay
