@@ -259,12 +259,24 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function enemyLogic(){
 		for (var i = 0; i < enemyPieces.length; i++) {
 			var hero = heroPieces[0];
-			var distanceX = hero.location.x - enemyPieces[i].location.x;
-			var distanceY = hero.location.y - enemyPieces[i].location.y;
-			if (distanceX > 0){
-				var moveAmount = distanceX > 4 ? enemyPieces[i].movement : distanceX;
-				moveGamePiece(enemyPieces[i], moveAmount, 0);
+			var distanceX = hero.location.x - enemyPieces[i].location.x - 1;
+			var distanceY = hero.location.y - enemyPieces[i].location.y - 1;
+			var moveX = 0;
+			var moveY = 0;
+			var moveRemaining = enemyPieces[i].movement;
+			if (distanceX > 0 && moveRemaining > 0){
+				moveX = distanceX > moveRemaining ? moveRemaining : distanceX;
+				moveRemaining -= distanceX;
 			}
+
+			if (distanceY > 0 && moveRemaining > 0){
+				moveY = distanceY > moveRemaining ? moveRemaining : distanceY;
+				moveRemaining -= distanceY;
+			}
+
+			moveX += enemyPieces[i].location.x;
+			moveY += enemyPieces[i].location.y;
+			moveGamePiece(enemyPieces[i], moveX, moveY);
 		}
 		endOfRound();
 	}
