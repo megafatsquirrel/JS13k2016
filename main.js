@@ -136,6 +136,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var clickXoutput = document.getElementById('clickXoutput');
 	var clickYoutput = document.getElementById('clickYoutput');
 
+	var enemyPhase = false;
+
 	function createInputEvents() {
 		document.addEventListener("mousemove", function(e) {
 			clientXoutput.innerHTML = e.clientX;
@@ -154,9 +156,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			if (!gameStart && btnX >= startBtn.left && btnX <= (startBtn.left + startBtn.width) &&
 				btnY >= startBtn.top && btnY <= (startBtn.top + startBtn.height)) {
 				gameStart = true;
-				
 			}
-
 
 			if ( clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
 				var indexX = parseInt(clickX / TILE_WIDTH);
@@ -177,7 +177,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 								if (mapTile.gamePieceId === enemy.id){
 									if (enemy.type === 'NPC'){
 										var damage = currentSelectedTile.attack;
-										// TODO handle death and giving XP
 										enemy.currentHP -= damage;
 										if (enemy.currentHP <= 0){
 											currentSelectedTile.exp += enemy.exp;
@@ -199,18 +198,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 						if (!currentSelectedTile.hasMoved && !mapTile.occupied && mapTile.isHighlightMove && currentSelectedTile.type === 'PC'){
 							for (var i = 0; i < gameObjects.length; i++) {
 								if (currentSelectedTile.id === gameObjects[i].id){
-									var currentGamePiece = gameObjects[i];
-									currentGamePiece.left = gameMap[indexX][indexY].left;
-									currentGamePiece.top = gameMap[indexX][indexY].top;
-									gameMap[currentGamePiece.location.x][currentGamePiece.location.y].occupied = false;
-									gameMap[currentGamePiece.location.x][currentGamePiece.location.y].occupiedType = '';
-									gameMap[currentGamePiece.location.x][currentGamePiece.location.y].gamePieceId = '';
-									currentGamePiece.location = {x: indexX, y: indexY};
-									gameMap[indexX][indexY].occupied = true;
-									gameMap[indexX][indexY].occupiedType = currentGamePiece.type;
-									gameMap[indexX][indexY].gamePieceId = currentGamePiece.id;
-									gameObjects[i].hasMoved = true;
-									currentSelectedTile = currentGamePiece;
+									moveGamePiece(gameObjects[i], indexX, indexY);
 								}
 							}
 						}
@@ -233,14 +221,41 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 		endTurnBtn.addEventListener('click', function(e){
 			// TODO add enemy logic here
-
-			for (var i = 0; i < gameObjects.length; i++) {
-				gameObjects[i].hasMoved = false;
-				gameObjects[i].hasAttacked = false;
-			}
-			gameRound++;
-			currentRound.innerHTML = gameRound;
+			enemyLogic();
 		});
+	}
+
+	function moveGamePiece(gamePiece, indexX, indexY) {
+		var currentGamePiece = gamePiece;
+		currentGamePiece.left = gameMap[indexX][indexY].left;
+		currentGamePiece.top = gameMap[indexX][indexY].top;
+		gameMap[currentGamePiece.location.x][currentGamePiece.location.y].occupied = false;
+		gameMap[currentGamePiece.location.x][currentGamePiece.location.y].occupiedType = '';
+		gameMap[currentGamePiece.location.x][currentGamePiece.location.y].gamePieceId = '';
+		currentGamePiece.location = {x: indexX, y: indexY};
+		gameMap[indexX][indexY].occupied = true;
+		gameMap[indexX][indexY].occupiedType = currentGamePiece.type;
+		gameMap[indexX][indexY].gamePieceId = currentGamePiece.id;
+		currentGamePiece.hasMoved = true;
+		currentSelectedTile = currentGamePiece;
+	}
+
+	function enemyLogic(){
+		enemyPhase = true;
+		for (var i = 0; i < gameObjects.length; i++) {
+			if (gameObjects[i].type === 'NPC'){
+				moveGamePiece(gameObjects[i], 3, 0);
+			}
+		}
+	}
+
+	function endOfRound(){
+		for (var i = 0; i < gameObjects.length; i++) {
+			gameObjects[i].hasMoved = false;
+			gameObjects[i].hasAttacked = false;
+		}
+		gameRound++;
+		currentRound.innerHTML = gameRound;
 	}
 
 	function isGameOver(){
@@ -260,8 +275,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 		currentSelectedTile = gamePiece;
 		gamePiece.color = gamePiece.type === 'PC' ? GAME_PIECE_HIGHLIGHT_COLOR_PC : GAME_PIECE_HIGHLIGHT_COLOR_NPC;
-
-
 
 		gamePieceName.innerHTML = gamePiece.name;
 		gamePieceHealth.innerHTML = gamePiece.currentHP + " / " + gamePiece.health;
@@ -417,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		ctx.fillRect(canvas.offsetLeft, canvas.offsetTop, canvas.width, canvas.height);
 	}
 
-	var gameStart = false;
+	var gameStart = true; //TODO remove for testing
 	var startBtn = {
 		color: '#000000',
 		left: canvas.width/2 - 200,
