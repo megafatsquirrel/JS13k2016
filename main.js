@@ -259,24 +259,47 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function enemyLogic(){
 		for (var i = 0; i < enemyPieces.length; i++) {
 			var hero = heroPieces[0];
-			var distanceX = hero.location.x - enemyPieces[i].location.x - 1;
-			var distanceY = hero.location.y - enemyPieces[i].location.y - 1;
+			var distanceX = hero.location.x - enemyPieces[i].location.x;
+			var distanceY = hero.location.y - enemyPieces[i].location.y;
+			var absX = Math.abs(distanceX);
+			var absY = Math.abs(distanceY);
 			var moveX = 0;
 			var moveY = 0;
 			var moveRemaining = enemyPieces[i].movement;
-			if (distanceX > 0 && moveRemaining > 0){
-				moveX = distanceX > moveRemaining ? moveRemaining : distanceX;
-				moveRemaining -= distanceX;
+			if (absX > 0){
+				moveX = absX > moveRemaining ? moveRemaining : absX;
+				moveRemaining -= absX;
 			}
 
-			if (distanceY > 0 && moveRemaining > 0){
-				moveY = distanceY > moveRemaining ? moveRemaining : distanceY;
-				moveRemaining -= distanceY;
+			if (absY > 0 && moveRemaining > 0){
+				moveY = absY > moveRemaining ? moveRemaining : absY;
+				moveRemaining -= absY;
 			}
 
-			moveX += enemyPieces[i].location.x;
-			moveY += enemyPieces[i].location.y;
-			moveGamePiece(enemyPieces[i], moveX, moveY);
+			if (distanceX < 0){
+				moveX -= enemyPieces[i].location.x;
+				moveX = Math.abs(moveX);
+			}else{
+				moveX += enemyPieces[i].location.x;
+			}
+
+			if (distanceY < 0){
+				moveY -= enemyPieces[i].location.y;
+				moveY = Math.abs(moveY);
+			}else{
+				moveY += enemyPieces[i].location.y;
+			}
+			
+			if (!gameMap[moveX][moveY].occupied){
+				moveGamePiece(enemyPieces[i], moveX, moveY);
+			}else if (moveX - 1 >= 0 && !gameMap[moveX - 1][moveY].occupied){ // left
+				moveGamePiece(enemyPieces[i], moveX - 1, moveY);
+			}else if (moveY - 1 >= 0 && !gameMap[moveX][moveY - 1].occupied){ // top
+				moveGamePiece(enemyPieces[i], moveX, moveY - 1);
+			}else if (moveY + 1 >= 0 && !gameMap[moveX][moveY + 1].occupied){ // bottom
+				moveGamePiece(enemyPieces[i], moveX, moveY + 1);
+			}
+			
 		}
 		endOfRound();
 	}
