@@ -236,7 +236,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		});
 
 		endTurnBtn.addEventListener('click', function(e){
-			// TODO add enemy logic here
 			enemyLogic();
 		});
 	}
@@ -300,8 +299,35 @@ document.addEventListener('DOMContentLoaded', function(e) {
 				moveGamePiece(enemyPieces[i], moveX, moveY + 1);
 			}
 			
+			var currentEnemy = enemyPieces[i];
+			if (currentEnemy.location.x - 1 >= 0 && gameMap[currentEnemy.location.x - 1][currentEnemy.location.y].occupied){
+				findHeroAndAttack(gameMap[currentEnemy.location.x - 1][currentEnemy.location.y], currentEnemy);
+			}else if(currentEnemy.location.x + 1 <= MAP_WIDTH && gameMap[currentEnemy.location.x + 1][currentEnemy.location.y].occupied){
+				findHeroAndAttack(gameMap[currentEnemy.location.x + 1][currentEnemy.location.y], currentEnemy);
+			}else if(currentEnemy.location.y - 1 >= 0 && gameMap[currentEnemy.location.x][currentEnemy.location.y - 1].occupied){
+				findHeroAndAttack(gameMap[currentEnemy.location.x][currentEnemy.location.y - 1], currentEnemy);
+			}else if(currentEnemy.location.y + 1 <= MAP_HEIGHT && gameMap[currentEnemy.location.x][currentEnemy.location.y + 1].occupied){
+				findHeroAndAttack(gameMap[currentEnemy.location.x][currentEnemy.location.y + 1], currentEnemy);
+			}
 		}
 		endOfRound();
+	}
+
+	function findHeroAndAttack(gameTile, currentEnemy){
+		for (var i = 0; i < heroPieces.length; i++) {
+			if (gameTile.gamePieceId === heroPieces[i].id){
+				var damage = currentEnemy.attack;
+				heroPieces[i].currentHP -= damage;
+				if (heroPieces[i].currentHP <= 0){
+					
+					heroPieces.splice(i, 1);
+					showGameMessage(300, 300, 'WINNER!', false);
+				}
+				currentEnemy.hasMoved = true;
+				currentEnemy.hasAttacked = true;
+				showDamageNumber(heroPieces[i], '-' + damage);			
+			}
+		}
 	}
 
 	function endOfRound(){
