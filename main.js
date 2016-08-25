@@ -56,14 +56,29 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	gameMap[0][0].occupied = true;
 	gameMap[0][0].occupiedType = gamePieceGoblin.type;
 	gameMap[0][0].gamePieceId = gamePieceGoblin.id;
+	
+	var heroLocation1 = {x: 1, y: 9};
+	var heroLocation2 = {x: 3, y: 9};
+	var heroLocation3 = {x: 5, y: 9};
 
-	var gamePieceHero = createGamePiece(gameMap[1][1].left, gameMap[1][1].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_PC, 'hero', {x: 1, y: 1}, 'Hero', 12, 4, weapon1, armor1, 0, false);
+	var gamePieceHero = createGamePiece(gameMap[heroLocation1.x][heroLocation1.y].left, gameMap[heroLocation1.x][heroLocation1.y].top, TILE_WIDTH, TILE_HEIGHT, 
+									GAME_PIECE_DEFAULT_COLOR_PC, 'hero', {x: heroLocation1.x, y: heroLocation1.y}, 'Hero', 12, 4, weapon1, armor1, 0, false);
+	var gamePieceHero2 = createGamePiece(gameMap[heroLocation2.x][heroLocation2.y].left, gameMap[heroLocation2.x][heroLocation2.y].top, TILE_WIDTH, TILE_HEIGHT, 
+									GAME_PIECE_DEFAULT_COLOR_PC, 'hero2', {x: heroLocation2.x, y: heroLocation2.y}, 'Hero2', 12, 4, weapon1, armor1, 0, false);
+	var gamePieceHero3 = createGamePiece(gameMap[heroLocation3.x][heroLocation3.y].left, gameMap[heroLocation3.x][heroLocation3.y].top, TILE_WIDTH, TILE_HEIGHT, 
+									GAME_PIECE_DEFAULT_COLOR_PC, 'hero3', {x: heroLocation3.x, y: heroLocation3.y}, 'Hero3', 12, 4, weapon1, armor1, 0, false);
 
-	gameMap[1][1].occupied = true;
-	gameMap[1][1].occupiedType = gamePieceHero.type;
-	gameMap[1][1].gamePieceId = gamePieceHero.id;
-	var heroPieces = new Array(gamePieceHero);
+	gameMap[heroLocation1.x][heroLocation1.y].occupied = true;
+	gameMap[heroLocation1.x][heroLocation1.y].occupiedType = gamePieceHero.type;
+	gameMap[heroLocation1.x][heroLocation1.y].gamePieceId = gamePieceHero.id;
+	gameMap[heroLocation2.x][heroLocation2.y].occupied = true;
+	gameMap[heroLocation2.x][heroLocation2.y].occupiedType = gamePieceHero2.type;
+	gameMap[heroLocation2.x][heroLocation2.y].gamePieceId = gamePieceHero2.id;
+	gameMap[heroLocation3.x][heroLocation3.y].occupied = true;
+	gameMap[heroLocation3.x][heroLocation3.y].occupiedType = gamePieceHero3.type;
+	gameMap[heroLocation3.x][heroLocation3.y].gamePieceId = gamePieceHero3.id;
+	
+	var heroPieces = new Array(gamePieceHero, gamePieceHero2, gamePieceHero3);
 	var enemyPieces = new Array(gamePieceGoblin);
 
 	function createGamePiece(left, top, width, height, color, id, location, name, health, movement, weapon, armor, exp, isNPC) {
