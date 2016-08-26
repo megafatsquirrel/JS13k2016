@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 	var gameRound = 0;
 
-	var MAP_WIDTH = 12;
+	var MAP_WIDTH = 10;
 	var MAP_HEIGHT = 10;
 	var TILE_WIDTH = 50;
 	var TILE_HEIGHT = 50;
@@ -57,9 +57,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	gameMap[0][0].occupiedType = gamePieceGoblin.type;
 	gameMap[0][0].gamePieceId = gamePieceGoblin.id;
 	
-	var heroLocation1 = {x: 1, y: 9};
-	var heroLocation2 = {x: 3, y: 9};
-	var heroLocation3 = {x: 5, y: 9};
+	var heroLocation1 = {x: 1, y: 8};
+	var heroLocation2 = {x: 4, y: 8};
+	var heroLocation3 = {x: 8, y: 8};
 
 	var gamePieceHero = createGamePiece(gameMap[heroLocation1.x][heroLocation1.y].left, gameMap[heroLocation1.x][heroLocation1.y].top, TILE_WIDTH, TILE_HEIGHT, 
 									GAME_PIECE_DEFAULT_COLOR_PC, 'hero', {x: heroLocation1.x, y: heroLocation1.y}, 'Hero', 12, 4, weapon1, armor1, 0, false);
