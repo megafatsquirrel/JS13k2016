@@ -51,12 +51,23 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	// setup game objects
 	var weapon1 = { name: 'dagger', damage: 2 };
 	var armor1 = { name: 'rags', defense: 1 };
-	var gamePieceGoblin = createGamePiece(gameMap[0][0].left, gameMap[0][0].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: 0, y: 0}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
-	gameMap[0][0].occupied = true;
-	gameMap[0][0].occupiedType = gamePieceGoblin.type;
-	gameMap[0][0].gamePieceId = gamePieceGoblin.id;
+
+	// enemies
+	var goblinLocation1 = {x: 1, y: 1};
+	var goblinLocation2 = {x: 4, y: 1};
+	var goblinLocation3 = {x: 8, y: 1};
+
+	var gamePieceGoblin = createGamePiece(gameMap[goblinLocation1.x][goblinLocation1.y].left, gameMap[goblinLocation1.x][goblinLocation1.y].top, TILE_WIDTH, TILE_HEIGHT, 
+									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: goblinLocation1.x, y: goblinLocation1.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
+	var gamePieceGoblin2 = createGamePiece(gameMap[goblinLocation2.x][goblinLocation2.y].left, gameMap[goblinLocation2.x][goblinLocation2.y].top, TILE_WIDTH, TILE_HEIGHT, 
+									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: goblinLocation2.x, y: goblinLocation2.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
+	var gamePieceGoblin3 = createGamePiece(gameMap[goblinLocation3.x][goblinLocation3.y].left, gameMap[goblinLocation3.x][goblinLocation3.y].top, TILE_WIDTH, TILE_HEIGHT, 
+									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: goblinLocation3.x, y: goblinLocation3.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
+	gameMap[goblinLocation1.x][goblinLocation1.y].occupied = true;
+	gameMap[goblinLocation2.x][goblinLocation2.y].occupiedType = gamePieceGoblin.type;
+	gameMap[goblinLocation3.x][goblinLocation3.y].gamePieceId = gamePieceGoblin.id;
 	
+	// heroes
 	var heroLocation1 = {x: 1, y: 8};
 	var heroLocation2 = {x: 4, y: 8};
 	var heroLocation3 = {x: 8, y: 8};
@@ -79,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	gameMap[heroLocation3.x][heroLocation3.y].gamePieceId = gamePieceHero3.id;
 	
 	var heroPieces = new Array(gamePieceHero, gamePieceHero2, gamePieceHero3);
-	var enemyPieces = new Array(gamePieceGoblin);
+	var enemyPieces = new Array(gamePieceGoblin, gamePieceGoblin2, gamePieceGoblin3);
 
 	function createGamePiece(left, top, width, height, color, id, location, name, health, movement, weapon, armor, exp, isNPC) {
 		// TODO refactor this into a base case for all pieces
