@@ -48,6 +48,10 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		}
 	}
 	
+	function getRandomNumber(min, max) {
+		return parseInt(Math.random() * (max - min) + min);
+	}
+	
 	// setup game objects
 	var weapon1 = { name: 'dagger', damage: 2 };
 	var armor1 = { name: 'rags', defense: 1 };
@@ -60,9 +64,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var gamePieceGoblin = createGamePiece(gameMap[goblinLocation1.x][goblinLocation1.y].left, gameMap[goblinLocation1.x][goblinLocation1.y].top, TILE_WIDTH, TILE_HEIGHT, 
 									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: goblinLocation1.x, y: goblinLocation1.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
 	var gamePieceGoblin2 = createGamePiece(gameMap[goblinLocation2.x][goblinLocation2.y].left, gameMap[goblinLocation2.x][goblinLocation2.y].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: goblinLocation2.x, y: goblinLocation2.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
+									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin2', {x: goblinLocation2.x, y: goblinLocation2.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
 	var gamePieceGoblin3 = createGamePiece(gameMap[goblinLocation3.x][goblinLocation3.y].left, gameMap[goblinLocation3.x][goblinLocation3.y].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: goblinLocation3.x, y: goblinLocation3.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
+									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin3', {x: goblinLocation3.x, y: goblinLocation3.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
 	gameMap[goblinLocation1.x][goblinLocation1.y].occupied = true;
 	gameMap[goblinLocation2.x][goblinLocation2.y].occupiedType = gamePieceGoblin.type;
 	gameMap[goblinLocation3.x][goblinLocation3.y].gamePieceId = gamePieceGoblin.id;
@@ -111,9 +115,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			currentHP: health,
 			weapon: weapon,
 			armor: armor,
-			attack: weapon.damage * 1, // TODO Add a dynamic mod for game piece type
+			attack: weapon.damage,
 			attackRange: 2,
-			defense: armor.defense * 1, // TODO Add a dynamic mod for game piece type
+			defense: armor.defense,
 			exp: exp,
 			type: isNPC ? 'NPC' : 'PC'
 		};
@@ -208,19 +212,30 @@ document.addEventListener('DOMContentLoaded', function(e) {
 								var enemy = enemyPieces[i];
 								if (mapTile.gamePieceId === enemy.id){
 									if (enemy.type === 'NPC'){
-										var damage = currentSelectedTile.attack;
-										enemy.currentHP -= damage;
-										if (enemy.currentHP <= 0){
-											currentSelectedTile.exp += enemy.exp;
-											enemyPieces.splice(i, 1);
+										// Roll for hit
+										var hitRoll = getRandomNumber(1, 10);
+										var HIT_CHANCE = 7;
+										var currentHit = HIT_CHANCE - enemy.armor.defense;
+										if (hitRoll >= currentHit) {
+											// hit success, roll for damage
+											var damage = getRandomNumber(1, currentSelectedTile.attack);
+											enemy.currentHP -= damage;
+											if (enemy.currentHP <= 0){
+												currentSelectedTile.exp += enemy.exp;
+												enemyPieces.splice(i, 1);
 
-											if (isGameOver()) {
-												showGameMessage(300, 300, 'WINNER!', false);
+												if (isGameOver()) {
+													showGameMessage(300, 300, 'WINNER!', false);
+												}
 											}
+											currentSelectedTile.hasMoved = true;
+											currentSelectedTile.hasAttacked = true;
+											showDamageNumber(enemy, '-' + damage);
+										}else{
+											currentSelectedTile.hasMoved = true;
+											currentSelectedTile.hasAttacked = true;
+											showDamageNumber(enemy, 'MISS!');
 										}
-										currentSelectedTile.hasMoved = true;
-										currentSelectedTile.hasAttacked = true;
-										showDamageNumber(enemy, '-' + damage);
 									}
 								}
 							}
@@ -265,6 +280,10 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			enemyLogic();
 		});
 	}
+
+	function rollForHit(){}
+	function rollForDamage(){}
+	function usePlayerSkill(){}
 
 	function moveGamePiece(gamePiece, indexX, indexY) {
 		var currentGamePiece = gamePiece;
@@ -508,8 +527,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var numberOverlayTimeoutId = null;
 	function showDamageNumber(gamePiece, damage) {
 		numberOverlay = {
-			x: gamePiece.location.x + MAP_OFFSET_LEFT,
-			y: gamePiece.location.y + MAP_OFFSET_TOP,
+			x: gamePiece.left + MAP_OFFSET_LEFT,
+			y: gamePiece.top + MAP_OFFSET_TOP,
 			damage: damage
 		};
 
