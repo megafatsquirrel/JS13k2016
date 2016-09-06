@@ -22,12 +22,14 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 	var gameRound = 0;
 
-	var MAP_WIDTH = 10;
-	var MAP_HEIGHT = 10;
-	var TILE_WIDTH = 50;
-	var TILE_HEIGHT = 50;
-	var MAP_OFFSET_LEFT = 100;
-	var MAP_OFFSET_TOP = 50;
+	var MAP_WIDTH = 12;
+	var MAP_HEIGHT = 12;
+	var TILE_WIDTH = 40;
+	var TILE_HEIGHT = 40;
+	var MAP_OFFSET_LEFT = 20;
+	var MAP_OFFSET_TOP = 20;
+	var gameMapWidth = MAP_WIDTH * TILE_WIDTH;
+	var gameMapHeight = MAP_HEIGHT * TILE_HEIGHT;
 
 	var TILE_GRASS = '#18da39';
 	var TILE_DIRT = '#e0bd6d';
@@ -47,6 +49,21 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			}
 		}
 	}
+
+	// UI
+	var MARGIN_SPACE = 40;
+	var gameInfoCard = {
+		left: gameMapWidth + MARGIN_SPACE,
+		top: MAP_OFFSET_TOP,
+		width: 300,
+		height: gameMapHeight
+	};
+	var gameControls = {
+		left: MAP_OFFSET_LEFT,
+		top: gameMapHeight + MARGIN_SPACE,
+		width: 800,
+		height: 50
+	};
 	
 	function getRandomNumber(min, max) {
 		return parseInt(Math.random() * (max - min) + min);
@@ -68,8 +85,14 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var gamePieceGoblin3 = createGamePiece(gameMap[goblinLocation3.x][goblinLocation3.y].left, gameMap[goblinLocation3.x][goblinLocation3.y].top, TILE_WIDTH, TILE_HEIGHT, 
 									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin3', {x: goblinLocation3.x, y: goblinLocation3.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
 	gameMap[goblinLocation1.x][goblinLocation1.y].occupied = true;
-	gameMap[goblinLocation2.x][goblinLocation2.y].occupiedType = gamePieceGoblin.type;
-	gameMap[goblinLocation3.x][goblinLocation3.y].gamePieceId = gamePieceGoblin.id;
+	gameMap[goblinLocation1.x][goblinLocation1.y].occupiedType = gamePieceGoblin.type;
+	gameMap[goblinLocation1.x][goblinLocation1.y].gamePieceId = gamePieceGoblin.id;
+	gameMap[goblinLocation2.x][goblinLocation2.y].occupied = true;
+	gameMap[goblinLocation2.x][goblinLocation2.y].occupiedType = gamePieceGoblin2.type;
+	gameMap[goblinLocation2.x][goblinLocation2.y].gamePieceId = gamePieceGoblin2.id;
+	gameMap[goblinLocation3.x][goblinLocation3.y].occupied = true;
+	gameMap[goblinLocation3.x][goblinLocation3.y].occupiedType = gamePieceGoblin3.type;
+	gameMap[goblinLocation3.x][goblinLocation3.y].gamePieceId = gamePieceGoblin3.id;
 	
 	// heroes
 	var heroLocation1 = {x: 1, y: 8};
@@ -143,44 +166,15 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		return temp;
 	}
 
-	var gamePieceInfoCard = document.getElementById('gamePieceInfoCard');
-	var gamePieceName = document.getElementById('gamePieceName');
-	var gamePieceHealth = document.getElementById('gamePieceHealth');
-	var gamePieceExp = document.getElementById('gamePieceExp');
-	var gamePieceAttack = document.getElementById('gamePieceAttack');
-	var gamePieceDefense = document.getElementById('gamePieceDefense');
-	var gamePieceWeapon = document.getElementById('gamePieceWeapon');
-	var gamePieceArmor = document.getElementById('gamePieceArmor');
-	var gamePieceMovement = document.getElementById('gamePieceMovement');
-	var gamePieceHasMoved = document.getElementById('gamePieceHasMoved');
-	var gamePieceInfoDisplay = document.getElementById('gamePieceInfoDisplay');
-	var gamePieceInfoDisplayDefault = document.getElementById('gamePieceInfoDisplayDefault');
-	var gamePieceHasAttacked = document.getElementById('gamePieceHasAttacked');
-	var currentRound = document.getElementById('currentRound');
-
 	var endTurnBtn = document.getElementById('endTurnBtn');
 
 	var currentSelectedTile = null;
-
-	var clientXoutput = document.getElementById('clientXoutput');
-	var clientYoutput = document.getElementById('clientYoutput');
-	var clickXoutput = document.getElementById('clickXoutput');
-	var clickYoutput = document.getElementById('clickYoutput');
-
 	var enemyPhase = false;
 
 	function createInputEvents() {
-		document.addEventListener("mousemove", function(e) {
-			clientXoutput.innerHTML = e.clientX;
-			clientYoutput.innerHTML = e.clientY;
-		});
-
 		document.addEventListener("mousedown", function(e) {
 			var clickX = (e.clientX - (MAP_OFFSET_LEFT + canvas.parentElement.offsetLeft)) + document.scrollingElement.scrollLeft;
 			var clickY = (e.clientY - (MAP_OFFSET_TOP + canvas.parentElement.offsetTop)) + document.scrollingElement.scrollTop;
-
-			clickXoutput.innerHTML = clickX;
-			clickYoutput.innerHTML = clickY;
 
 			var btnX = (e.clientX - canvas.parentElement.offsetLeft) + document.scrollingElement.scrollLeft;
 			var btnY = (e.clientY - canvas.parentElement.offsetTop) + document.scrollingElement.scrollTop;
@@ -385,7 +379,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			enemyPieces[i].hasAttacked = false;
 		}
 		gameRound++;
-		currentRound.innerHTML = gameRound;
 	}
 
 	function isGameOver(){
@@ -405,23 +398,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 		currentSelectedTile = gamePiece;
 		gamePiece.color = gamePiece.type === 'PC' ? GAME_PIECE_HIGHLIGHT_COLOR_PC : GAME_PIECE_HIGHLIGHT_COLOR_NPC;
-
-		gamePieceName.innerHTML = gamePiece.name;
-		gamePieceHealth.innerHTML = gamePiece.currentHP + " / " + gamePiece.health;
-		
-		if (gamePiece.type === 'PC') {
-			gamePieceExp.innerHTML = gamePiece.exp;	
-			gamePieceMovement.innerHTML = gamePiece.movement;
-			gamePieceAttack.innerHTML = gamePiece.attack;
-			gamePieceDefense.innerHTML = gamePiece.defense;
-			gamePieceWeapon.innerHTML = gamePiece.weapon.name;
-			gamePieceArmor.innerHTML = gamePiece.armor.name;
-			gamePieceHasMoved.innerHTML = gamePiece.hasMoved;
-			gamePieceHasAttacked.innerHTML = gamePiece.hasAttacked;
-		}
-		
-		gamePieceInfoDisplay.style.display = 'block';
-		gamePieceInfoDisplayDefault.style.display = 'none';
 
 		if (gamePiece.type === 'PC'){
 			if (!gamePiece.hasMoved)
@@ -518,8 +494,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function deselectGamePiece(gamePiece){
 		currentSelectedTile = null;
 		gamePiece.color = gamePiece.type === 'PC' ? GAME_PIECE_DEFAULT_COLOR_PC : GAME_PIECE_DEFAULT_COLOR_NPC;
-		gamePieceInfoDisplay.style.display = 'none';
-		gamePieceInfoDisplayDefault.style.display = 'block';
 		deselectGameMapTiles();
 	}
 
@@ -561,6 +535,13 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	}
 
 	var gameStart = true; //TODO remove for testing
+	var endOfRoundBtn = {
+		color: '#000000',
+		left: gameControls.width - 100,
+		top: gameControls.top + 10,
+		width: 100,
+		height: 40
+	};
 	var startBtn = {
 		color: '#000000',
 		left: canvas.width/2 - 200,
@@ -643,6 +624,45 @@ document.addEventListener('DOMContentLoaded', function(e) {
 					}
 				}
 			}
+
+			// game ui
+			// info card - for game piece
+			ctx.fillStyle = '#FFFFFF';
+			ctx.fillRect(gameInfoCard.left, gameInfoCard.top, gameInfoCard.width, gameInfoCard.height);
+			if (currentSelectedTile != null){
+				// text
+				ctx.font = '18px serif';
+				ctx.fillStyle = '#000';
+				ctx.fillText('Name: ' + currentSelectedTile.name, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE);
+				ctx.fillText('Health: ' + currentSelectedTile.currentHP + " / " + currentSelectedTile.health, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 20);
+				ctx.fillText('Exp: ' + currentSelectedTile.exp, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 40);
+				ctx.fillText('Move: ' + currentSelectedTile.movement, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 60);
+				ctx.fillText('Attack: ' + currentSelectedTile.attack, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 80);
+				ctx.fillText('Defense: ' + currentSelectedTile.defense, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 100);
+				ctx.fillText('Weapon: ' + currentSelectedTile.weapon.name, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 120);
+				ctx.fillText('Armor: ' + currentSelectedTile.armor.name, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 140);
+				ctx.fillText('HasMoved: ' + currentSelectedTile.hasMoved, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 160);
+				ctx.fillText('HasAttack: ' + currentSelectedTile.hasAttacked, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 180);
+			}
+			// Outline
+			ctx.fillStyle = '#000000';
+			ctx.strokeRect(gameInfoCard.left, gameInfoCard.top, gameInfoCard.width, gameInfoCard.height);
+			
+			// game controls - end turn...hero quick info (HUD)
+			ctx.fillStyle = '#FFFFFF';
+			ctx.fillRect(gameControls.left, gameControls.top, gameControls.width, gameControls.height);
+			// content
+			ctx.font = '18px serif';
+			ctx.fillStyle = '#000';
+			ctx.fillText('Round: ' + gameRound, gameControls.left + 20, gameControls.top + 30);
+			ctx.fillStyle = '#000000';
+			ctx.strokeRect(gameControls.left, gameControls.top, gameControls.width, gameControls.height);
+			// button
+			ctx.fillStyle = endOfRoundBtn.color;
+			ctx.fillRect(endOfRoundBtn.left, endOfRoundBtn.top, endOfRoundBtn.width, endOfRoundBtn.height);
+			ctx.font = '18px serif';
+			ctx.fillStyle = '#FFFFFF';
+			ctx.fillText("End Round", endOfRoundBtn.left, endOfRoundBtn.top + 20);
 
 			// show damage number 
 			if (numberOverlay !== null) {

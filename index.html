@@ -4,34 +4,11 @@
 	<title>JS13k2016</title>
 </head>
 <body style="background-color:#403e3e;">
-	<div style="position:relative; width:250px; color: #ccc;">
-		<p>Client X:<span id="clientXoutput">/</span></p>
-		<p>Client Y:<span id="clientYoutput">/</span></p>
-		<p>Click X:<span id="clickXoutput">/</span></p>
-		<p>Click Y:<span id="clickYoutput">/</span></p>
-	</div>
 	<div style="position: relative; float: left; width: 800px;">
-		<canvas id="canvas" width="800" height="600"></canvas>	
+		<canvas id="canvas" width="840" height="600"></canvas>	
 	</div>
 	<!-- TODO move these into the canvas -->
 	<div style="float: left;">
-		<div id="gamePieceInfoCard" style="margin-left: 10px; width: 300px; height: 400px; background-color: #FFF; padding: 5px 15px;">
-			<div id="gamePieceInfoDisplay" style="display:none;">
-				<h1 id="gamePieceName">Default</h1>
-				<p><strong>Health: </strong><span id="gamePieceHealth">/</span></p>
-				<p><strong>Exp: </strong><span id="gamePieceExp">/</span></p>
-				<p><strong>Movement: </strong><span id="gamePieceMovement">/</span></p>
-				<p><strong>Attack: </strong><span id="gamePieceAttack">/</span></p>
-				<p><strong>Defense: </strong><span id="gamePieceDefense">/</span></p>
-				<p><strong>Weapon: </strong><span id="gamePieceWeapon">/</span></p>
-				<p><strong>Armor: </strong><span id="gamePieceArmor">/</span></p>
-				<p><strong>Has Moved: </strong><span id="gamePieceHasMoved">/</span></p>
-				<p><strong>Has Attacked: </strong><span id="gamePieceHasAttacked">/</span></p>
-			</div>
-			<div id="gamePieceInfoDisplayDefault">
-				<h1>Nothing Selected</h1>
-			</div>
-		</div>
 		<div style="margin: 10px 0 0 10px; width: 300px; height: 50px; background-color: #FFF; padding: 5px 15px;">
 			<p><strong>Round: </strong><span id="currentRound">0</span></p>
 		</div>
