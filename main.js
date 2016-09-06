@@ -166,8 +166,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		return temp;
 	}
 
-	var endTurnBtn = document.getElementById('endTurnBtn');
-
 	var currentSelectedTile = null;
 	var enemyPhase = false;
 
@@ -183,7 +181,12 @@ document.addEventListener('DOMContentLoaded', function(e) {
 				gameStart = true;
 			}
 
-			if ( clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
+			if (!enemyPhase && btnX >= endOfRoundBtn.left && btnX <= (endOfRoundBtn.left + endOfRoundBtn.width) &&
+				btnY >= endOfRoundBtn.top && btnY <= (endOfRoundBtn.top + endOfRoundBtn.height)) {
+				enemyLogic();
+			}
+
+			if (!enemyPhase && clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
 				var indexX = parseInt(clickX / TILE_WIDTH);
 				var indexY = parseInt(clickY / TILE_HEIGHT);
 				if (indexX >= 0 && indexY >= 0 && indexX <= MAP_WIDTH && indexY <= MAP_HEIGHT) {
@@ -268,10 +271,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 					}
 				});
 			}
-		});
-
-		endTurnBtn.addEventListener('click', function(e){
-			enemyLogic();
 		});
 	}
 
@@ -537,10 +536,10 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var gameStart = true; //TODO remove for testing
 	var endOfRoundBtn = {
 		color: '#000000',
-		left: gameControls.width - 100,
+		left: gameControls.width - 150,
 		top: gameControls.top + 10,
-		width: 100,
-		height: 40
+		width: 150,
+		height: 30
 	};
 	var startBtn = {
 		color: '#000000',
@@ -662,7 +661,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			ctx.fillRect(endOfRoundBtn.left, endOfRoundBtn.top, endOfRoundBtn.width, endOfRoundBtn.height);
 			ctx.font = '18px serif';
 			ctx.fillStyle = '#FFFFFF';
-			ctx.fillText("End Round", endOfRoundBtn.left, endOfRoundBtn.top + 20);
+			ctx.fillText("End Round", endOfRoundBtn.left + 35, endOfRoundBtn.top + 20);
 
 			// show damage number 
 			if (numberOverlay !== null) {
