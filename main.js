@@ -64,6 +64,9 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		width: 800,
 		height: 50
 	};
+
+	// Combat rules
+	var HIT_CHANCE = 8;
 	
 	function getRandomNumber(min, max) {
 		return parseInt(Math.random() * (max - min) + min);
@@ -211,7 +214,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 									if (enemy.type === 'NPC'){
 										// Roll for hit
 										var hitRoll = getRandomNumber(1, 10);
-										var HIT_CHANCE = 7;
 										var currentHit = HIT_CHANCE - enemy.armor.defense;
 										if (hitRoll >= currentHit) {
 											// hit success, roll for damage
@@ -354,16 +356,23 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function findHeroAndAttack(gameTile, currentEnemy){
 		for (var i = 0; i < heroPieces.length; i++) {
 			if (gameTile.gamePieceId === heroPieces[i].id){
-				var damage = currentEnemy.attack;
-				heroPieces[i].currentHP -= damage;
-				if (heroPieces[i].currentHP <= 0){
-					
-					heroPieces.splice(i, 1);
-					showGameMessage(300, 300, 'WINNER!', false);
+				// Roll for hit
+				var hitRoll = getRandomNumber(1, 10);
+				var currentHit = HIT_CHANCE - heroPieces[i].armor.defense;
+				if (hitRoll >= currentHit) {
+					var damage = currentEnemy.attack;
+					heroPieces[i].currentHP -= damage;
+					if (heroPieces[i].currentHP <= 0){
+						heroPieces.splice(i, 1);
+					}
+					currentEnemy.hasMoved = true;
+					currentEnemy.hasAttacked = true;
+					showDamageNumber(heroPieces[i], '-' + damage);				
+				}else{
+					currentEnemy.hasMoved = true;
+					currentEnemy.hasAttacked = true;
+					showDamageNumber(heroPieces[i], 'MISS!');
 				}
-				currentEnemy.hasMoved = true;
-				currentEnemy.hasAttacked = true;
-				showDamageNumber(heroPieces[i], '-' + damage);			
 			}
 		}
 	}
