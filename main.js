@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var HIGHLIGHT_COLOR_MOVE = 'rgba(128, 145, 241, 0.6)';
 	var HIGHLIGHT_COLOR_ATTACK = 'rgba(251, 34, 34, 0.6)';
 
+	var gameRunning = true;
 	var gameRound = 0;
 
 	var MAP_WIDTH = 12;
@@ -182,14 +183,15 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			if (!gameStart && btnX >= startBtn.left && btnX <= (startBtn.left + startBtn.width) &&
 				btnY >= startBtn.top && btnY <= (startBtn.top + startBtn.height)) {
 				gameStart = true;
+				gameRunning = true;
 			}
 
-			if (!enemyPhase && btnX >= endOfRoundBtn.left && btnX <= (endOfRoundBtn.left + endOfRoundBtn.width) &&
+			if (gameRunning && !enemyPhase && btnX >= endOfRoundBtn.left && btnX <= (endOfRoundBtn.left + endOfRoundBtn.width) &&
 				btnY >= endOfRoundBtn.top && btnY <= (endOfRoundBtn.top + endOfRoundBtn.height)) {
 				enemyLogic();
 			}
 
-			if (!enemyPhase && clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
+			if (gameRunning && !enemyPhase && clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
 				var indexX = parseInt(clickX / TILE_WIDTH);
 				var indexY = parseInt(clickY / TILE_HEIGHT);
 				if (indexX >= 0 && indexY >= 0 && indexX <= MAP_WIDTH && indexY <= MAP_HEIGHT) {
@@ -277,11 +279,12 @@ document.addEventListener('DOMContentLoaded', function(e) {
 					enemyPieces.splice(index, 1);
 
 				if (isGameOver())
-					showGameMessage(300, 300, 'WINNER!', false);
-				
+					showGameMessage(canvas.width/2 - 200, canvas.height/2, 'WINNER!', false);
 			}else if(currentSelectedTile.type === 'NPC'){
 				if (heroPieces.length > 0)
 					heroPieces.splice(index, 1);
+				if (isGameOver())
+					showGameMessage(canvas.width/2 - 200, canvas.height/2, 'GAME OVER', false);
 			}
 		}
 		currentSelectedTile.hasMoved = true;
@@ -386,13 +389,12 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	}
 
 	function isGameOver(){
-		for (var i = 0; i < enemyPieces.length; i++) {
-			if (enemyPieces[i].type === 'NPC'){
-				return false;
-			}
+		if (enemyPieces.length <= 0 || heroPieces.length <= 0) {
+			gameStart = false;
+			gameRunning = false;
+			return true;
 		}
-
-		return true;
+		return false;
 	}
 
 	function selectGamePiece(gamePiece){
