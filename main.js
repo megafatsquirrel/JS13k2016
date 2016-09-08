@@ -212,29 +212,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 								var enemy = enemyPieces[i];
 								if (mapTile.gamePieceId === enemy.id){
 									if (enemy.type === 'NPC'){
-										// Roll for hit
-										var hitRoll = getRandomNumber(1, 10);
-										var currentHit = HIT_CHANCE - enemy.armor.defense;
-										if (hitRoll >= currentHit) {
-											// hit success, roll for damage
-											var damage = getRandomNumber(1, currentSelectedTile.attack);
-											enemy.currentHP -= damage;
-											if (enemy.currentHP <= 0){
-												currentSelectedTile.exp += enemy.exp;
-												enemyPieces.splice(i, 1);
-
-												if (isGameOver()) {
-													showGameMessage(300, 300, 'WINNER!', false);
-												}
-											}
-											currentSelectedTile.hasMoved = true;
-											currentSelectedTile.hasAttacked = true;
-											showDamageNumber(enemy, '-' + damage);
-										}else{
-											currentSelectedTile.hasMoved = true;
-											currentSelectedTile.hasAttacked = true;
-											showDamageNumber(enemy, 'MISS!');
-										}
+										rollForHit(enemy, i);
 									}
 								}
 							}
@@ -276,11 +254,44 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		});
 	}
 
-	function rollForHit(){}
-	function rollForDamage(){}
+	function rollForHit(gamePiece, index){
+		currentSelectedTile.hasMoved = true;
+		currentSelectedTile.hasAttacked = true;
+		var hitRoll = getRandomNumber(1, 10);
+		var currentHit = HIT_CHANCE - gamePiece.armor.defense;
+		if (hitRoll >= currentHit){
+			rollForDamage(gamePiece);
+		}else{
+			showDamageNumber(gamePiece, 'MISS!');
+		}
+	}
+
+	function rollForDamage(gamePiece, index){
+		// hit success, roll for damage
+		var damage = getRandomNumber(1, currentSelectedTile.attack);
+		gamePiece.currentHP -= damage;
+		if (gamePiece.currentHP <= 0){
+			if (currentSelectedTile.type === 'PC'){
+				currentSelectedTile.exp += gamePiece.exp;
+				if (enemyPieces.length > 0)
+					enemyPieces.splice(index, 1);
+
+				if (isGameOver())
+					showGameMessage(300, 300, 'WINNER!', false);
+				
+			}else if(currentSelectedTile.type === 'NPC'){
+				if (heroPieces.length > 0)
+					heroPieces.splice(index, 1);
+			}
+		}
+		currentSelectedTile.hasMoved = true;
+		currentSelectedTile.hasAttacked = true;
+		showDamageNumber(gamePiece, '-' + damage);
+	}
+
 	function usePlayerSkill(){}
 
-	function moveGamePiece(gamePiece, indexX, indexY) {
+	function moveGamePiece(gamePiece, indexX, indexY){
 		var currentGamePiece = gamePiece;
 		currentGamePiece.left = gameMap[indexX][indexY].left;
 		currentGamePiece.top = gameMap[indexX][indexY].top;
@@ -298,6 +309,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function enemyLogic(){
 		for (var i = 0; i < enemyPieces.length; i++) {
 			var hero = heroPieces[0];
+			selectGamePiece(enemyPieces[i]);
 			var distanceX = hero.location.x - enemyPieces[i].location.x;
 			var distanceY = hero.location.y - enemyPieces[i].location.y;
 			var absX = Math.abs(distanceX);
@@ -356,23 +368,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function findHeroAndAttack(gameTile, currentEnemy){
 		for (var i = 0; i < heroPieces.length; i++) {
 			if (gameTile.gamePieceId === heroPieces[i].id){
-				// Roll for hit
-				var hitRoll = getRandomNumber(1, 10);
-				var currentHit = HIT_CHANCE - heroPieces[i].armor.defense;
-				if (hitRoll >= currentHit) {
-					var damage = currentEnemy.attack;
-					heroPieces[i].currentHP -= damage;
-					if (heroPieces[i].currentHP <= 0){
-						heroPieces.splice(i, 1);
-					}
-					currentEnemy.hasMoved = true;
-					currentEnemy.hasAttacked = true;
-					showDamageNumber(heroPieces[i], '-' + damage);				
-				}else{
-					currentEnemy.hasMoved = true;
-					currentEnemy.hasAttacked = true;
-					showDamageNumber(heroPieces[i], 'MISS!');
-				}
+				rollForHit(heroPieces[i], i);
 			}
 		}
 	}
