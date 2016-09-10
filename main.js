@@ -1,28 +1,14 @@
-// TODO tasklist
-// create game work flow, turned based combat
-// create game piece interactions (move, attack, special abilities)
-// create menu, start, and other screens
-// create game piece classes
-// create game piece monsters
-// create game piece weapons
-// create game piece items
-// create game piece armor
-
 document.addEventListener('DOMContentLoaded', function(e) {
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
-
 	var CLEAR_COLOR = '#FFFFFF';
-	var GAME_PIECE_DEFAULT_COLOR_NPC = '#ffc107';
-	var GAME_PIECE_HIGHLIGHT_COLOR_NPC = '#ffedb6';
-	var GAME_PIECE_DEFAULT_COLOR_PC = '#d40dcb';
-	var GAME_PIECE_HIGHLIGHT_COLOR_PC = '#f7abf3';
+	var GOBLIN_COLOR = '#319225';
+	var GOBLIN_HIGHLIGHT_COLOR = '#56e445';
+	var HERO_COLOR = '#7b0e76';
+	var HERO_HIGHLIGHT_COLOR = '#d628ce';
 	var HIGHLIGHT_COLOR_MOVE = 'rgba(128, 145, 241, 0.6)';
 	var HIGHLIGHT_COLOR_ATTACK = 'rgba(251, 34, 34, 0.6)';
-
-	var gameRunning = true;
 	var gameRound = 0;
-
 	var MAP_WIDTH = 12;
 	var MAP_HEIGHT = 12;
 	var TILE_WIDTH = 40;
@@ -31,10 +17,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	var MAP_OFFSET_TOP = 20;
 	var gameMapWidth = MAP_WIDTH * TILE_WIDTH;
 	var gameMapHeight = MAP_HEIGHT * TILE_HEIGHT;
-
-	var TILE_GRASS = '#18da39';
-	var TILE_DIRT = '#e0bd6d';
-
+	var TILE_GRASS = '#ccaf92';
 	var gameMap = [];
 	createGameMap(MAP_WIDTH, MAP_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
 	function createGameMap(width, height, tileWidth, tileHeight) {
@@ -68,74 +51,63 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 	// Combat rules
 	var HIT_CHANCE = 8;
-	
 	function getRandomNumber(min, max) {
-		return parseInt(Math.random() * (max - min) + min);
+		return parseInt(Math.random() * (max - min + 1) + min);
 	}
-	
-	// setup game objects
-	var weapon1 = { name: 'dagger', damage: 2 };
-	var armor1 = { name: 'rags', defense: 1 };
 
-	// enemies
-	var goblinLocation1 = {x: 1, y: 1};
-	var goblinLocation2 = {x: 4, y: 1};
-	var goblinLocation3 = {x: 8, y: 1};
+	var daggerWeapon = { name: 'Dagger', damage: 2, range: 1 };
+	var swordWeapon = { name: 'Sword', damage: 3, range: 2 };
+	var clothArmor = { name: 'Cloth Armor', defense: 1 };
+	var leatherArmor = { name: 'Leather Armor', defense: 2 };
 
-	var gamePieceGoblin = createGamePiece(gameMap[goblinLocation1.x][goblinLocation1.y].left, gameMap[goblinLocation1.x][goblinLocation1.y].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin', {x: goblinLocation1.x, y: goblinLocation1.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
-	var gamePieceGoblin2 = createGamePiece(gameMap[goblinLocation2.x][goblinLocation2.y].left, gameMap[goblinLocation2.x][goblinLocation2.y].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin2', {x: goblinLocation2.x, y: goblinLocation2.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
-	var gamePieceGoblin3 = createGamePiece(gameMap[goblinLocation3.x][goblinLocation3.y].left, gameMap[goblinLocation3.x][goblinLocation3.y].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_NPC, 'goblin3', {x: goblinLocation3.x, y: goblinLocation3.y}, 'Goblin', 2, 4, weapon1, armor1, 5, true);
-	gameMap[goblinLocation1.x][goblinLocation1.y].occupied = true;
-	gameMap[goblinLocation1.x][goblinLocation1.y].occupiedType = gamePieceGoblin.type;
-	gameMap[goblinLocation1.x][goblinLocation1.y].gamePieceId = gamePieceGoblin.id;
-	gameMap[goblinLocation2.x][goblinLocation2.y].occupied = true;
-	gameMap[goblinLocation2.x][goblinLocation2.y].occupiedType = gamePieceGoblin2.type;
-	gameMap[goblinLocation2.x][goblinLocation2.y].gamePieceId = gamePieceGoblin2.id;
-	gameMap[goblinLocation3.x][goblinLocation3.y].occupied = true;
-	gameMap[goblinLocation3.x][goblinLocation3.y].occupiedType = gamePieceGoblin3.type;
-	gameMap[goblinLocation3.x][goblinLocation3.y].gamePieceId = gamePieceGoblin3.id;
-	
-	// heroes
-	var heroLocation1 = {x: 1, y: 8};
-	var heroLocation2 = {x: 4, y: 8};
-	var heroLocation3 = {x: 8, y: 8};
+	var enemyPieces = new Array();
+	function createGoblins(){
+		var goblinLocation = {x: -1, y: 1};
+		for (var i = 1; i < 6; i++){
+			goblinLocation.x += 2;
+			var key = 'goblin' + i;
+			var temp = createGamePiece(gameMap[goblinLocation.x][goblinLocation.y].left, 
+									gameMap[goblinLocation.x][goblinLocation.y].top, TILE_WIDTH, TILE_HEIGHT, 
+									GOBLIN_COLOR, GOBLIN_HIGHLIGHT_COLOR, key, 
+									{x: goblinLocation.x, y: goblinLocation.y}, 'Goblin', 2, 5, daggerWeapon, clothArmor, true);
+			enemyPieces.push(temp);
+			gameMap[goblinLocation.x][goblinLocation.y].occupied = true;
+			gameMap[goblinLocation.x][goblinLocation.y].occupiedType = temp.type;
+			gameMap[goblinLocation.x][goblinLocation.y].gamePieceId = temp.id;
+		}
+	}
+	createGoblins();
 
-	var gamePieceHero = createGamePiece(gameMap[heroLocation1.x][heroLocation1.y].left, gameMap[heroLocation1.x][heroLocation1.y].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_PC, 'hero', {x: heroLocation1.x, y: heroLocation1.y}, 'Hero', 12, 4, weapon1, armor1, 0, false);
-	var gamePieceHero2 = createGamePiece(gameMap[heroLocation2.x][heroLocation2.y].left, gameMap[heroLocation2.x][heroLocation2.y].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_PC, 'hero2', {x: heroLocation2.x, y: heroLocation2.y}, 'Hero2', 12, 4, weapon1, armor1, 0, false);
-	var gamePieceHero3 = createGamePiece(gameMap[heroLocation3.x][heroLocation3.y].left, gameMap[heroLocation3.x][heroLocation3.y].top, TILE_WIDTH, TILE_HEIGHT, 
-									GAME_PIECE_DEFAULT_COLOR_PC, 'hero3', {x: heroLocation3.x, y: heroLocation3.y}, 'Hero3', 12, 4, weapon1, armor1, 0, false);
+	var heroPieces = new Array();
+	function createHeroes(){
+		var heroLocation = {x: -1, y: 8};
+		for (var i = 1; i < 4; i++){
+			heroLocation.x += 2;
+			var key = 'hero' + i;
+			var temp = createGamePiece(gameMap[heroLocation.x][heroLocation.y].left, gameMap[heroLocation.x][heroLocation.y].top,
+			 						TILE_WIDTH, TILE_HEIGHT, HERO_COLOR, HERO_HIGHLIGHT_COLOR, 
+			 						key, {x: heroLocation.x, y: heroLocation.y}, 'Hero', 10, 4, swordWeapon, leatherArmor, false);
+			heroPieces.push(temp);
+			gameMap[heroLocation.x][heroLocation.y].occupied = true;
+			gameMap[heroLocation.x][heroLocation.y].occupiedType = temp.type;
+			gameMap[heroLocation.x][heroLocation.y].gamePieceId = temp.id;
+		}
+	}
+	createHeroes();
 
-	gameMap[heroLocation1.x][heroLocation1.y].occupied = true;
-	gameMap[heroLocation1.x][heroLocation1.y].occupiedType = gamePieceHero.type;
-	gameMap[heroLocation1.x][heroLocation1.y].gamePieceId = gamePieceHero.id;
-	gameMap[heroLocation2.x][heroLocation2.y].occupied = true;
-	gameMap[heroLocation2.x][heroLocation2.y].occupiedType = gamePieceHero2.type;
-	gameMap[heroLocation2.x][heroLocation2.y].gamePieceId = gamePieceHero2.id;
-	gameMap[heroLocation3.x][heroLocation3.y].occupied = true;
-	gameMap[heroLocation3.x][heroLocation3.y].occupiedType = gamePieceHero3.type;
-	gameMap[heroLocation3.x][heroLocation3.y].gamePieceId = gamePieceHero3.id;
-	
-	var heroPieces = new Array(gamePieceHero, gamePieceHero2, gamePieceHero3);
-	var enemyPieces = new Array(gamePieceGoblin, gamePieceGoblin2, gamePieceGoblin3);
-
-	function createGamePiece(left, top, width, height, color, id, location, name, health, movement, weapon, armor, exp, isNPC) {
-		// TODO refactor this into a base case for all pieces
-		// TODO find a way to enforce a unique id
+	function createGamePiece(left, top, width, height, color, highlightColor, id, location, name, health, movement, weapon, armor, isNPC) {
 		var temp = {
 			left: left,
 			top: top,
 			width: width,
 			height: height,
 			color: color,
+			highlightColor: highlightColor,
+			currentColor: color,
 			hasMoved: false,
 			hasAttacked: false,
 			id: id,
-			location: location, //1|2
+			location: location,
 			name: name,
 			health: health,
 			movement: movement,
@@ -143,9 +115,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			weapon: weapon,
 			armor: armor,
 			attack: weapon.damage,
-			attackRange: 2,
+			attackRange: weapon.range,
 			defense: armor.defense,
-			exp: exp,
 			type: isNPC ? 'NPC' : 'PC'
 		};
 
@@ -180,18 +151,13 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 			var btnX = (e.clientX - canvas.parentElement.offsetLeft) + document.scrollingElement.scrollLeft;
 			var btnY = (e.clientY - canvas.parentElement.offsetTop) + document.scrollingElement.scrollTop;
-			if (!gameStart && btnX >= startBtn.left && btnX <= (startBtn.left + startBtn.width) &&
-				btnY >= startBtn.top && btnY <= (startBtn.top + startBtn.height)) {
-				gameStart = true;
-				gameRunning = true;
-			}
-
-			if (gameRunning && !enemyPhase && btnX >= endOfRoundBtn.left && btnX <= (endOfRoundBtn.left + endOfRoundBtn.width) &&
+			
+			if (!enemyPhase && btnX >= endOfRoundBtn.left && btnX <= (endOfRoundBtn.left + endOfRoundBtn.width) &&
 				btnY >= endOfRoundBtn.top && btnY <= (endOfRoundBtn.top + endOfRoundBtn.height)) {
 				enemyLogic();
 			}
 
-			if (gameRunning && !enemyPhase && clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
+			if (!enemyPhase && clickX >= 0 && clickX <= (TILE_WIDTH * MAP_WIDTH) && clickY >= 0 && clickY <= (TILE_HEIGHT * MAP_HEIGHT) ) {
 				var indexX = parseInt(clickX / TILE_WIDTH);
 				var indexY = parseInt(clickY / TILE_HEIGHT);
 				if (indexX >= 0 && indexY >= 0 && indexX <= MAP_WIDTH && indexY <= MAP_HEIGHT) {
@@ -274,7 +240,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		gamePiece.currentHP -= damage;
 		if (gamePiece.currentHP <= 0){
 			if (currentSelectedTile.type === 'PC'){
-				currentSelectedTile.exp += gamePiece.exp;
 				if (enemyPieces.length > 0)
 					enemyPieces.splice(index, 1);
 
@@ -291,8 +256,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		currentSelectedTile.hasAttacked = true;
 		showDamageNumber(gamePiece, '-' + damage);
 	}
-
-	function usePlayerSkill(){}
 
 	function moveGamePiece(gamePiece, indexX, indexY){
 		var currentGamePiece = gamePiece;
@@ -403,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		}
 
 		currentSelectedTile = gamePiece;
-		gamePiece.color = gamePiece.type === 'PC' ? GAME_PIECE_HIGHLIGHT_COLOR_PC : GAME_PIECE_HIGHLIGHT_COLOR_NPC;
+		gamePiece.currentColor = gamePiece.highlightColor;
 
 		if (gamePiece.type === 'PC'){
 			if (!gamePiece.hasMoved)
@@ -481,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 	function checkTileMoveAttack(tile, gamePiece, isAttack) {
 		if (!tile.occupied && !isAttack){
 			tile.isHighlightMove = true;
-		}else{
+		}else if (isAttack){
 			tile.isHighlightAttack = true;
 		}
 	}
@@ -499,7 +462,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 	function deselectGamePiece(gamePiece){
 		currentSelectedTile = null;
-		gamePiece.color = gamePiece.type === 'PC' ? GAME_PIECE_DEFAULT_COLOR_PC : GAME_PIECE_DEFAULT_COLOR_NPC;
+		gamePiece.currentColor = gamePiece.color;
 		deselectGameMapTiles();
 	}
 
@@ -540,7 +503,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		ctx.fillRect(canvas.offsetLeft, canvas.offsetTop, canvas.width, canvas.height);
 	}
 
-	var gameStart = true; //TODO remove for testing
 	var endOfRoundBtn = {
 		color: '#000000',
 		left: gameControls.width - 150,
@@ -548,35 +510,53 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		width: 150,
 		height: 30
 	};
-	var startBtn = {
-		color: '#000000',
-		left: canvas.width/2 - 200,
-		top: canvas.width/2 - 150,
-		width: 400,
-		height: 100
-	};
-	function gameMenuOverlay(){
-		// ctx.fillStyle = "#FFFFFF";
-		// ctx.fillRect(canvas.offsetLeft, canvas.offsetTop, canvas.width, canvas.height);
-		ctx.fillStyle = startBtn.color;
-		ctx.fillRect(startBtn.left, startBtn.top, startBtn.width, startBtn.height);
-		
-		// TODO add click handler for the button and game menu
-		ctx.font = '48px serif';
-		ctx.fillStyle = '#FFFFFF';
-		ctx.fillText("START", canvas.width/2 - 70, canvas.height/2 + 15);
-	}
-
+	
 	function render(){
 		clearScreen();
 
-		if (!gameStart) {
-			gameMenuOverlay();
-		}else{
-			// draw map
-			for (var i = 0; i < MAP_WIDTH; i++){
-				for (var j = 0; j < MAP_HEIGHT; j++){
-					ctx.fillStyle = gameMap[i][j].color;
+		// draw map
+		for (var i = 0; i < MAP_WIDTH; i++){
+			for (var j = 0; j < MAP_HEIGHT; j++){
+				ctx.fillStyle = gameMap[i][j].color;
+				
+				ctx.fillRect(gameMap[i][j].left, 
+					gameMap[i][j].top, 
+					gameMap[i][j].width, 
+					gameMap[i][j].height);
+
+				ctx.fillStyle = '#000000';
+				ctx.strokeRect(gameMap[i][j].left, 
+					gameMap[i][j].top, 
+					gameMap[i][j].width, 
+					gameMap[i][j].height);
+			}
+		}
+
+		// draw game objects
+		for (var i = 0; i < heroPieces.length; i++) {
+			ctx.fillStyle = heroPieces[i].currentColor;
+			ctx.fillRect(heroPieces[i].left, 
+				heroPieces[i].top, 
+				heroPieces[i].width, 
+				heroPieces[i].height);
+		}
+		for (var i = 0; i < enemyPieces.length; i++) {
+			ctx.fillStyle = enemyPieces[i].currentColor;
+			ctx.fillRect(enemyPieces[i].left, 
+				enemyPieces[i].top, 
+				enemyPieces[i].width, 
+				enemyPieces[i].height);
+		}
+
+		// draw overlay
+		for (var i = 0; i < MAP_WIDTH; i++){
+			for (var j = 0; j < MAP_HEIGHT; j++){
+				if (gameMap[i][j].isHighlightAttack || gameMap[i][j].isHighlightMove){
+
+					if (gameMap[i][j].isHighlightMove)
+						ctx.fillStyle = HIGHLIGHT_COLOR_MOVE;
+					if (gameMap[i][j].isHighlightAttack)
+						ctx.fillStyle = HIGHLIGHT_COLOR_ATTACK;
 					
 					ctx.fillRect(gameMap[i][j].left, 
 						gameMap[i][j].top, 
@@ -590,108 +570,66 @@ document.addEventListener('DOMContentLoaded', function(e) {
 						gameMap[i][j].height);
 				}
 			}
+		}
 
-			// draw game objects
-			for (var i = 0; i < heroPieces.length; i++) {
-				ctx.fillStyle = heroPieces[i].color;
-				ctx.fillRect(heroPieces[i].left, 
-					heroPieces[i].top, 
-					heroPieces[i].width, 
-					heroPieces[i].height);
-			}
-			for (var i = 0; i < enemyPieces.length; i++) {
-				ctx.fillStyle = enemyPieces[i].color;
-				ctx.fillRect(enemyPieces[i].left, 
-					enemyPieces[i].top, 
-					enemyPieces[i].width, 
-					enemyPieces[i].height);
-			}
-
-			// draw overlay
-			for (var i = 0; i < MAP_WIDTH; i++){
-				for (var j = 0; j < MAP_HEIGHT; j++){
-					if (gameMap[i][j].isHighlightAttack || gameMap[i][j].isHighlightMove){
-
-						if (gameMap[i][j].isHighlightMove)
-							ctx.fillStyle = HIGHLIGHT_COLOR_MOVE;
-						if (gameMap[i][j].isHighlightAttack)
-							ctx.fillStyle = HIGHLIGHT_COLOR_ATTACK;
-						
-						ctx.fillRect(gameMap[i][j].left, 
-							gameMap[i][j].top, 
-							gameMap[i][j].width, 
-							gameMap[i][j].height);
-
-						ctx.fillStyle = '#000000';
-						ctx.strokeRect(gameMap[i][j].left, 
-							gameMap[i][j].top, 
-							gameMap[i][j].width, 
-							gameMap[i][j].height);
-					}
-				}
-			}
-
-			// game ui
-			// info card - for game piece
-			ctx.fillStyle = '#FFFFFF';
-			ctx.fillRect(gameInfoCard.left, gameInfoCard.top, gameInfoCard.width, gameInfoCard.height);
-			if (currentSelectedTile != null){
-				// text
-				ctx.font = '18px serif';
-				ctx.fillStyle = '#000';
-				ctx.fillText('Name: ' + currentSelectedTile.name, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE);
-				ctx.fillText('Health: ' + currentSelectedTile.currentHP + " / " + currentSelectedTile.health, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 20);
-				ctx.fillText('Exp: ' + currentSelectedTile.exp, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 40);
-				ctx.fillText('Move: ' + currentSelectedTile.movement, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 60);
-				ctx.fillText('Attack: ' + currentSelectedTile.attack, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 80);
-				ctx.fillText('Defense: ' + currentSelectedTile.defense, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 100);
-				ctx.fillText('Weapon: ' + currentSelectedTile.weapon.name, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 120);
-				ctx.fillText('Armor: ' + currentSelectedTile.armor.name, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 140);
-				ctx.fillText('HasMoved: ' + currentSelectedTile.hasMoved, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 160);
-				ctx.fillText('HasAttack: ' + currentSelectedTile.hasAttacked, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 180);
-			}
-			// Outline
-			ctx.fillStyle = '#000000';
-			ctx.strokeRect(gameInfoCard.left, gameInfoCard.top, gameInfoCard.width, gameInfoCard.height);
-			
-			// game controls - end turn...hero quick info (HUD)
-			ctx.fillStyle = '#FFFFFF';
-			ctx.fillRect(gameControls.left, gameControls.top, gameControls.width, gameControls.height);
-			// content
+		// game ui
+		// info card - for game piece
+		ctx.fillStyle = '#FFFFFF';
+		ctx.fillRect(gameInfoCard.left, gameInfoCard.top, gameInfoCard.width, gameInfoCard.height);
+		if (currentSelectedTile != null){
+			// text
 			ctx.font = '18px serif';
 			ctx.fillStyle = '#000';
-			ctx.fillText('Round: ' + gameRound, gameControls.left + 20, gameControls.top + 30);
-			ctx.fillStyle = '#000000';
-			ctx.strokeRect(gameControls.left, gameControls.top, gameControls.width, gameControls.height);
-			// button
-			ctx.fillStyle = endOfRoundBtn.color;
-			ctx.fillRect(endOfRoundBtn.left, endOfRoundBtn.top, endOfRoundBtn.width, endOfRoundBtn.height);
+			ctx.fillText('Name: ' + currentSelectedTile.name, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE);
+			ctx.fillText('Health: ' + currentSelectedTile.currentHP + " / " + currentSelectedTile.health, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 20);
+			ctx.fillText('Move: ' + currentSelectedTile.movement, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 60);
+			ctx.fillText('Attack: ' + currentSelectedTile.attack, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 80);
+			ctx.fillText('Defense: ' + currentSelectedTile.defense, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 100);
+			ctx.fillText('Weapon: ' + currentSelectedTile.weapon.name, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 120);
+			ctx.fillText('Armor: ' + currentSelectedTile.armor.name, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 140);
+			ctx.fillText('HasMoved: ' + currentSelectedTile.hasMoved, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 160);
+			ctx.fillText('HasAttack: ' + currentSelectedTile.hasAttacked, gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE + 180);
+		}else{
 			ctx.font = '18px serif';
-			ctx.fillStyle = '#FFFFFF';
-			ctx.fillText("End Round", endOfRoundBtn.left + 35, endOfRoundBtn.top + 20);
-
-			// show damage number 
-			if (numberOverlay !== null) {
-				ctx.font = '48px serif';
-				ctx.fillStyle = '#000';
-	  			ctx.fillText(numberOverlay.damage, numberOverlay.x, numberOverlay.y);
-			}
-
-			if (messageOverlay !== null) {
-				ctx.font = '48px serif';
-				ctx.fillStyle = '#000';
-	  			ctx.fillText(messageOverlay.msg, messageOverlay.x, messageOverlay.y);
-			}
+			ctx.fillStyle = '#000';
+			ctx.fillText('Nothing selected.', gameInfoCard.left + MARGIN_SPACE, gameInfoCard.top + MARGIN_SPACE);
 		}
-	}
+		// Outline
+		ctx.fillStyle = '#000000';
+		ctx.strokeRect(gameInfoCard.left, gameInfoCard.top, gameInfoCard.width, gameInfoCard.height);
+		
+		// game controls - end turn...hero quick info (HUD)
+		ctx.fillStyle = '#FFFFFF';
+		ctx.fillRect(gameControls.left, gameControls.top, gameControls.width, gameControls.height);
+		// content
+		ctx.font = '18px serif';
+		ctx.fillStyle = '#000';
+		ctx.fillText('Round: ' + gameRound, gameControls.left + 20, gameControls.top + 30);
+		ctx.fillStyle = '#000000';
+		ctx.strokeRect(gameControls.left, gameControls.top, gameControls.width, gameControls.height);
+		// button
+		ctx.fillStyle = endOfRoundBtn.color;
+		ctx.fillRect(endOfRoundBtn.left, endOfRoundBtn.top, endOfRoundBtn.width, endOfRoundBtn.height);
+		ctx.font = '18px serif';
+		ctx.fillStyle = '#FFFFFF';
+		ctx.fillText("End Round", endOfRoundBtn.left + 35, endOfRoundBtn.top + 20);
 
-	function logic(){
+		// show damage number 
+		if (numberOverlay !== null) {
+			ctx.font = '48px serif';
+			ctx.fillStyle = '#000';
+  			ctx.fillText(numberOverlay.damage, numberOverlay.x, numberOverlay.y);
+		}
+
+		if (messageOverlay !== null) {
+			ctx.font = '48px serif';
+			ctx.fillStyle = '#000';
+  			ctx.fillText(messageOverlay.msg, messageOverlay.x, messageOverlay.y);
+		}
 		
 	}
 
 	function gameLoop(){
-
-		logic();
 		render();
 		requestAnimationFrame(gameLoop);		
 	}
