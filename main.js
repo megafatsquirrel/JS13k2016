@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		var hitRoll = getRandomNumber(1, 10);
 		var currentHit = HIT_CHANCE - gamePiece.armor.defense;
 		if (hitRoll >= currentHit){
-			rollForDamage(gamePiece);
+			rollForDamage(gamePiece, index);
 		}else{
 			showDamageNumber(gamePiece, 'MISS!');
 		}
@@ -242,14 +242,13 @@ document.addEventListener('DOMContentLoaded', function(e) {
 			if (currentSelectedTile.type === 'PC'){
 				if (enemyPieces.length > 0)
 					enemyPieces.splice(index, 1);
-
 				if (isGameOver())
-					showGameMessage(canvas.width/2 - 200, canvas.height/2, 'WINNER!', false);
+					showGameMessage(canvas.width/2 - 250, canvas.height/2, 'VICTORY!', false);
 			}else if(currentSelectedTile.type === 'NPC'){
 				if (heroPieces.length > 0)
 					heroPieces.splice(index, 1);
 				if (isGameOver())
-					showGameMessage(canvas.width/2 - 200, canvas.height/2, 'GAME OVER', false);
+					showGameMessage(canvas.width/2 - 200, canvas.height/2, 'DEFEAT!', false);
 			}
 		}
 		currentSelectedTile.hasMoved = true;
@@ -274,7 +273,8 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 	function enemyLogic(){
 		for (var i = 0; i < enemyPieces.length; i++) {
-			var hero = heroPieces[0];
+			var hero = heroPieces[getRandomNumber(0, heroPieces.length-1)];
+
 			selectGamePiece(enemyPieces[i]);
 			var distanceX = hero.location.x - enemyPieces[i].location.x;
 			var distanceY = hero.location.y - enemyPieces[i].location.y;
@@ -616,14 +616,14 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
 		// show damage number 
 		if (numberOverlay !== null) {
-			ctx.font = '48px serif';
-			ctx.fillStyle = '#000';
+			ctx.font = '54px serif';
+			ctx.fillStyle = '#ffee1e';
   			ctx.fillText(numberOverlay.damage, numberOverlay.x, numberOverlay.y);
 		}
 
 		if (messageOverlay !== null) {
-			ctx.font = '48px serif';
-			ctx.fillStyle = '#000';
+			ctx.font = '54px serif';
+			ctx.fillStyle = '#ec560e';
   			ctx.fillText(messageOverlay.msg, messageOverlay.x, messageOverlay.y);
 		}
 		
